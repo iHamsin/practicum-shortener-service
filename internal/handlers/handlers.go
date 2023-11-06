@@ -24,12 +24,10 @@ func InsertHandler(repo repositories.Repository) http.HandlerFunc {
 		code, error := repo.Insert(string(body))
 		if error != nil {
 			http.Error(res, error.Error(), http.StatusBadRequest)
-			return
+		} else {
+			res.WriteHeader(http.StatusCreated)
+			res.Write([]byte("http://localhost:8080/" + code))
 		}
-
-		res.WriteHeader(http.StatusCreated)
-		res.Write([]byte("http://localhost:8080/" + code))
-		return
 	}
 }
 
@@ -48,11 +46,9 @@ func GetHandler(repo repositories.Repository) http.HandlerFunc {
 		link, error := repo.GetByCode(linkCode)
 		if error != nil {
 			http.Error(res, error.Error(), http.StatusBadRequest)
-			return
 		} else {
 			res.Header().Set("Location", link)
 			res.WriteHeader(http.StatusTemporaryRedirect)
-			return
 		}
 	}
 }
