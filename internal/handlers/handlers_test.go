@@ -79,7 +79,6 @@ func TestStatusHandler(t *testing.T) {
 			defer res.Body.Close()
 			// проверяем возврат линка по сохраненному коду
 			assert.Equal(t, res.Header.Get("Location"), test.want.postBody)
-
 		})
 	}
 }

@@ -4,8 +4,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 )
 
@@ -33,15 +33,17 @@ func InsertHandler(repo repositories.Repository) http.HandlerFunc {
 
 func GetHandler(repo repositories.Repository) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		// // разбиваем Path на сегменты
-		// URLsegments := strings.Split(req.URL.Path, "/")
-		// // если сегментов более одного, возвращаем ошибку
-		// if len(URLsegments) != 2 {
-		// 	http.Error(res, "Bad request", http.StatusBadRequest)
-		// 	return
-		// }
+		// разбиваем Path на сегменты
+		URLsegments := strings.Split(req.URL.Path, "/")
+		// если сегментов более одного, возвращаем ошибку
+		if len(URLsegments) != 2 {
+			http.Error(res, "Bad request", http.StatusBadRequest)
+			return
+		}
+		linkCode := URLsegments[1]
 
-		linkCode := chi.URLParam(req, "linkCode")
+		// отваливаются тесты если использовать chi.URLParam
+		// linkCode := chi.URLParam(req, "linkCode")
 
 		link, error := repo.GetByCode(linkCode)
 		if error != nil {
