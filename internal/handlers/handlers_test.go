@@ -75,6 +75,7 @@ func TestStatusHandler(t *testing.T) {
 			request = httptest.NewRequest(http.MethodGet, string(resBody), nil)
 			w = httptest.NewRecorder()
 			MainHandler(repository)(w, request)
+			defer res.Body.Close()
 			res = w.Result()
 			// проверяем возврат линка по сохраненному коду
 			assert.Equal(t, res.Header.Get("Location"), test.want.postBody)
