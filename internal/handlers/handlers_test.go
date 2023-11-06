@@ -55,7 +55,7 @@ func TestStatusHandler(t *testing.T) {
 
 			request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(test.want.postBody))
 			w := httptest.NewRecorder()
-			MainHandler(repository)(w, request)
+			InsertHandler(repository)(w, request)
 			res := w.Result()
 			defer res.Body.Close()
 			resBody, _ := io.ReadAll(res.Body)
@@ -74,7 +74,7 @@ func TestStatusHandler(t *testing.T) {
 
 			request = httptest.NewRequest(http.MethodGet, string(resBody), nil)
 			w = httptest.NewRecorder()
-			MainHandler(repository)(w, request)
+			GetHandler(repository)(w, request)
 			res = w.Result()
 			defer res.Body.Close()
 			// проверяем возврат линка по сохраненному коду
