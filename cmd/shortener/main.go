@@ -10,7 +10,7 @@ import (
 
 func randomString(n int) string {
 	// словарь
-	var alphabet []rune = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+	alphabet := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
 	alphabetSize := len(alphabet)
 	var sb strings.Builder
 	for i := 0; i < n; i++ {
