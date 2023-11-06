@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
@@ -68,10 +67,12 @@ func mainHandler(storage map[string]string) http.HandlerFunc {
 			}
 			// записываем в хранилище
 			storage[URLkey] = string(body)
+			res.WriteHeader(http.StatusCreated)
+			res.Write([]byte("http://localhost:8080/" + URLkey))
 			// @temp для проверки хранилища
-			for k, v := range storage {
-				res.Write([]byte(fmt.Sprintf("%s: %v\r\n", k, v)))
-			}
+			// for k, v := range storage {
+			// 	res.Write([]byte(fmt.Sprintf("%s: %v\r\n", k, v)))
+			// }
 			return
 		} else { // метод отличный от POST или GET
 			http.Error(res, "Only GET and POST requests are allowed!", http.StatusBadRequest)
