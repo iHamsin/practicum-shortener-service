@@ -57,6 +57,7 @@ func TestStatusHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 			MainHandler(repository)(w, request)
 			res := w.Result()
+			defer res.Body.Close()
 			resBody, _ := io.ReadAll(res.Body)
 			// проверяем код ответа
 			assert.Equal(t, test.want.postCode, res.StatusCode)
@@ -77,7 +78,6 @@ func TestStatusHandler(t *testing.T) {
 			res = w.Result()
 			// проверяем возврат линка по сохраненному коду
 			assert.Equal(t, res.Header.Get("Location"), test.want.postBody)
-			defer res.Body.Close()
 
 		})
 	}
