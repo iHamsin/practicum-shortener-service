@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func randomString(n int) string {
+func RandomString(n int) string {
 	// словарь
 	alphabet := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
 	alphabetSize := len(alphabet)
