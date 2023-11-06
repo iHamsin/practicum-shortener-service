@@ -2,23 +2,10 @@ package main
 
 import (
 	"io"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
 )
-
-func randomString(n int) string {
-	// словарь
-	alphabet := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
-	alphabetSize := len(alphabet)
-	var sb strings.Builder
-	for i := 0; i < n; i++ {
-		ch := alphabet[rand.Intn(alphabetSize)]
-		sb.WriteRune(ch)
-	}
-	return sb.String()
-}
 
 func mainHandler(storage map[string]string) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -53,7 +40,7 @@ func mainHandler(storage map[string]string) http.HandlerFunc {
 			var URLkey string
 			var i = 0
 			for {
-				URLkey = randomString(8)
+				URLkey = util.randomString(8)
 				_, keyUsed := storage[URLkey]
 				if !keyUsed {
 					break
