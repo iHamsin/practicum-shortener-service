@@ -18,17 +18,13 @@ func main() {
 
 	cfg := new(config.Config)
 
+	flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "HTTP server addr. Default: localhost:8080")
+	flag.StringVar(&cfg.HTTP.BaseURL, "b", "http://localhost:8080", "Short link BaseURL. Default: http://localhost:8080")
+	flag.Parse()
+
 	configError := env.Parse(&cfg.HTTP)
 	if configError != nil {
 		log.Fatal(configError)
-	}
-	if cfg.HTTP.Addr == "" {
-		flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "HTTP server addr. Default: localhost:8080")
-		flag.Parse()
-	}
-	if cfg.HTTP.BaseURL == "" {
-		flag.StringVar(&cfg.HTTP.BaseURL, "b", "http://localhost:8080", "Short link BaseURL. Default: http://localhost:8080")
-		flag.Parse()
 	}
 
 	// хранилище пока в памяти
