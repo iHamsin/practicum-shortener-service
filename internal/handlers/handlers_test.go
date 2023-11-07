@@ -22,7 +22,7 @@ func TestStatusHandler(t *testing.T) {
 		checkResponceBody bool
 		responceBody      string
 		httpAddr          string
-		httpBaseUrl       string
+		httpBaseURL       string
 	}
 	tests := []struct {
 		name string
@@ -38,7 +38,7 @@ func TestStatusHandler(t *testing.T) {
 				checkResponceBody: false,
 				responceBody:      "",
 				httpAddr:          "localhost:8080",
-				httpBaseUrl:       "http://localhost:8080/",
+				httpBaseURL:       "http://localhost:8080/",
 			},
 		},
 		{
@@ -51,7 +51,7 @@ func TestStatusHandler(t *testing.T) {
 				checkResponceBody: true,
 				responceBody:      "parse \"blablabla\": invalid URI for request\n",
 				httpAddr:          "localhost:9090",
-				httpBaseUrl:       "http://localhost:9090/prefix-",
+				httpBaseURL:       "http://localhost:9090/prefix-",
 			},
 		},
 	}
@@ -61,7 +61,7 @@ func TestStatusHandler(t *testing.T) {
 			repository := repositories.NewLinksRepoRAM(make(map[string]string))
 			cfg := new(config.Config)
 			cfg.HTTP.Addr = test.want.httpAddr
-			cfg.HTTP.BaseURL = test.want.httpBaseUrl
+			cfg.HTTP.BaseURL = test.want.httpBaseURL
 
 			request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(test.want.postBody))
 			w := httptest.NewRecorder()
