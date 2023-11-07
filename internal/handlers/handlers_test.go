@@ -38,7 +38,7 @@ func TestStatusHandler(t *testing.T) {
 				checkResponceBody: false,
 				responceBody:      "",
 				httpAddr:          "localhost:8080",
-				httpBaseURL:       "http://localhost:8080/",
+				httpBaseURL:       "http://localhost:8080",
 			},
 		},
 		{

@@ -16,7 +16,7 @@ func main() {
 
 	cfg := new(config.Config)
 	flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "HTTP server addr. Default: localhost:8080")
-	flag.StringVar(&cfg.HTTP.BaseURL, "b", "http://localhost:8080/", "Short link BaseURL. Default: http://localhost:8080/")
+	flag.StringVar(&cfg.HTTP.BaseURL, "b", "http://localhost:8080", "Short link BaseURL. Default: http://localhost:8080")
 	flag.Parse()
 
 	// хранилище пока в памяти
