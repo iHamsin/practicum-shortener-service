@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 )
 
@@ -20,6 +21,8 @@ func TestStatusHandler(t *testing.T) {
 		bodySize          int
 		checkResponceBody bool
 		responceBody      string
+		httpAddr          string
+		httpBaseUrl       string
 	}
 	tests := []struct {
 		name string
@@ -34,6 +37,8 @@ func TestStatusHandler(t *testing.T) {
 				bodySize:          30,
 				checkResponceBody: false,
 				responceBody:      "",
+				httpAddr:          "localhost:8080",
+				httpBaseUrl:       "http://localhost:8080/",
 			},
 		},
 		{
@@ -45,6 +50,8 @@ func TestStatusHandler(t *testing.T) {
 				bodySize:          43,
 				checkResponceBody: true,
 				responceBody:      "parse \"blablabla\": invalid URI for request\n",
+				httpAddr:          "localhost:9090",
+				httpBaseUrl:       "http://localhost:9090/prefix-",
 			},
 		},
 	}
@@ -52,10 +59,13 @@ func TestStatusHandler(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			repository := repositories.NewLinksRepoRAM(make(map[string]string))
+			cfg := new(config.Config)
+			cfg.HTTP.Addr = test.want.httpAddr
+			cfg.HTTP.BaseURL = test.want.httpBaseUrl
 
 			request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(test.want.postBody))
 			w := httptest.NewRecorder()
-			InsertHandler(repository)(w, request)
+			InsertHandler(repository, *cfg)(w, request)
 			res := w.Result()
 			defer res.Body.Close()
 			resBody, _ := io.ReadAll(res.Body)
@@ -74,7 +84,7 @@ func TestStatusHandler(t *testing.T) {
 
 			request = httptest.NewRequest(http.MethodGet, string(resBody), nil)
 			w = httptest.NewRecorder()
-			GetHandler(repository)(w, request)
+			GetHandler(repository, *cfg)(w, request)
 			res = w.Result()
 			defer res.Body.Close()
 			// проверяем возврат линка по сохраненному коду
