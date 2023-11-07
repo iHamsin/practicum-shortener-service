@@ -17,9 +17,16 @@ func InsertHandler(repo repositories.Repository, cfg config.Config) http.Handler
 
 		// парсим URL @todo надо найти лучше способ валидации URL
 		_, error := url.ParseRequestURI(string(body))
+
 		if error != nil {
 			http.Error(res, error.Error(), http.StatusBadRequest)
 			return
+		}
+
+		codePrefix := "/"
+		baseURL, _ := url.ParseRequestURI(cfg.HTTP.BaseURL)
+		if len(baseURL.Path) > 0 {
+			codePrefix = ""
 		}
 
 		// сохраняем линк
@@ -28,7 +35,7 @@ func InsertHandler(repo repositories.Repository, cfg config.Config) http.Handler
 			http.Error(res, error.Error(), http.StatusBadRequest)
 		} else {
 			res.WriteHeader(http.StatusCreated)
-			res.Write([]byte(cfg.HTTP.BaseURL + "/" + code))
+			res.Write([]byte(cfg.HTTP.BaseURL + codePrefix + code))
 		}
 	}
 }
@@ -49,7 +56,14 @@ func GetHandler(repo repositories.Repository, cfg config.Config) http.HandlerFun
 		// отваливаются тесты если использовать chi.URLParam
 		// linkCode := chi.URLParam(req, "linkCode")
 
-		linkCode := strings.TrimPrefix("http://"+string(req.Host+req.URL.Path), cfg.HTTP.BaseURL+"/")
+		codePrefix := "/"
+		baseURL, _ := url.ParseRequestURI(cfg.HTTP.BaseURL)
+		if len(baseURL.Path) > 0 {
+			codePrefix = ""
+		}
+
+		fmt.Println("> GET request")
+		linkCode := strings.TrimPrefix("http://"+string(req.Host+req.URL.Path), cfg.HTTP.BaseURL+codePrefix)
 		fmt.Println("Code asked: " + linkCode)
 
 		link, error := repo.GetByCode(linkCode)

@@ -8,7 +8,7 @@ type (
 
 	// HTTP -.
 	HTTP struct {
-		Addr    string
-		BaseURL string
+		Addr    string `env:"SERVER_ADDRESS"`
+		BaseURL string `env:"BASE_URL"`
 	}
 )
