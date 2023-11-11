@@ -1,3 +1,11 @@
+# Codecov badge
+
+[![codecov](https://codecov.io/gh/iHamsin/practicum-shortener-service/graph/badge.svg?token=Z6XZR4AYOB)](https://codecov.io/gh/iHamsin/practicum-shortener-service)
+
+
+[![codecov](https://codecov.io/gh/iHamsin/practicum-shortener-service/graphs/sunburst.svg?token=Z6XZR4AYOB)](https://codecov.io/gh/iHamsin/practicum-shortener-service)
+
+
 # go-musthave-shortener-tpl
 
 Шаблон репозитория для трека «Сервис сокращения URL».
