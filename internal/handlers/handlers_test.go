@@ -63,9 +63,12 @@ func TestStatusHandler(t *testing.T) {
 			cfg.HTTP.Addr = test.want.httpAddr
 			cfg.HTTP.BaseURL = test.want.httpBaseURL
 
+			postHandler := PostHandler{Repo: repository, Cfg: *cfg}
+			getHandler := GetHandler{Repo: repository, Cfg: *cfg}
+
 			request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(test.want.postBody))
 			w := httptest.NewRecorder()
-			InsertHandler(repository, *cfg)(w, request)
+			postHandler.ServeHTTP(w, request)
 			res := w.Result()
 			defer res.Body.Close()
 			resBody, _ := io.ReadAll(res.Body)
@@ -84,7 +87,7 @@ func TestStatusHandler(t *testing.T) {
 
 			request = httptest.NewRequest(http.MethodGet, string(resBody), nil)
 			w = httptest.NewRecorder()
-			GetHandler(repository, *cfg)(w, request)
+			getHandler.ServeHTTP(w, request)
 			res = w.Result()
 			defer res.Body.Close()
 			// проверяем возврат линка по сохраненному коду

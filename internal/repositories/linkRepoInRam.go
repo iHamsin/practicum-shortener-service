@@ -7,17 +7,17 @@ import (
 )
 
 // LinkRepoRAM -.
-type LinksRepoInRAM struct {
+type linksRepoInRAM struct {
 	storage map[string]string
 }
 
 // New -.
-func NewLinksRepoRAM(storage map[string]string) *LinksRepoInRAM {
-	return &LinksRepoInRAM{storage}
+func NewLinksRepoRAM(storage map[string]string) *linksRepoInRAM {
+	return &linksRepoInRAM{storage}
 }
 
 // Insert -.
-func (r *LinksRepoInRAM) Insert(link string) (string, error) {
+func (r *linksRepoInRAM) Insert(link string) (string, error) {
 	// генерируем ключ и проверяем на наличие такого в хранилище
 	var linkKey string
 	var i = 0
@@ -38,7 +38,7 @@ func (r *LinksRepoInRAM) Insert(link string) (string, error) {
 }
 
 // GetByCode -.
-func (r *LinksRepoInRAM) GetByCode(linkCode string) (string, error) {
+func (r *linksRepoInRAM) GetByCode(linkCode string) (string, error) {
 	// проверка наличия в хранилище
 	_, URLfound := r.storage[linkCode]
 	if !URLfound {

@@ -3,20 +3,35 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/handlers"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
+	"github.com/sirupsen/logrus"
 
 	"github.com/go-chi/chi/v5"
 )
 
-func main() {
+func init() {
+	lvl, ok := os.LookupEnv("LOG_LEVEL")
+	// LOG_LEVEL not set, let's default to debug
+	if !ok {
+		lvl = "debug"
+	}
+	// parse string, this is built-in feature of logrus
+	ll, err := logrus.ParseLevel(lvl)
+	if err != nil {
+		ll = logrus.DebugLevel
+	}
+	// set global log level
+	logrus.SetLevel(ll)
+}
 
-	cfg := new(config.Config)
+func main() {
+	cfg := &config.Config{}
 
 	flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "HTTP server addr. Default: localhost:8080")
 	flag.StringVar(&cfg.HTTP.BaseURL, "b", "http://localhost:8080", "Short link BaseURL. Default: http://localhost:8080")
@@ -24,7 +39,7 @@ func main() {
 
 	configError := env.Parse(&cfg.HTTP)
 	if configError != nil {
-		log.Fatal(configError)
+		logrus.Error(configError)
 	}
 
 	// хранилище пока в памяти
@@ -32,15 +47,20 @@ func main() {
 
 	router := chi.NewRouter()
 
-	router.Post("/", handlers.InsertHandler(repository, *cfg))
-	router.Get("/{linkCode}", handlers.GetHandler(repository, *cfg))
+	postHandler := &handlers.PostHandler{Repo: repository, Cfg: *cfg}
+	getHandler := &handlers.GetHandler{Repo: repository, Cfg: *cfg}
+
+	router.Post("/", postHandler.ServeHTTP)
+	router.Get("/{linkCode}", getHandler.ServeHTTP)
+
+	logrus.Debug("WebServer started")
 
 	fmt.Println("WebServer started at " + cfg.HTTP.Addr)
 	fmt.Println("Short link BaseURL: " + cfg.HTTP.BaseURL)
 
-	err := http.ListenAndServe(cfg.HTTP.Addr, router)
-	if err != nil {
-		panic(err)
+	serverError := http.ListenAndServe(cfg.HTTP.Addr, router)
+	if serverError != nil {
+		logrus.Error(serverError)
 	}
 
 }

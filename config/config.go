@@ -1,14 +1,11 @@
 package config
 
-type (
-	// Config -.
-	Config struct {
-		HTTP
-	}
+type Config struct {
+	HTTP
+}
 
-	// HTTP -.
-	HTTP struct {
-		Addr    string `env:"SERVER_ADDRESS"`
-		BaseURL string `env:"BASE_URL"`
-	}
-)
+// HTTP -.
+type HTTP struct {
+	Addr    string `env:"SERVER_ADDRESS"`
+	BaseURL string `env:"BASE_URL"`
+}
