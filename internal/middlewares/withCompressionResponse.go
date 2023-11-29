@@ -30,7 +30,7 @@ func WithCompressionResponse(next http.Handler) http.Handler {
 
 		logrus.Debug("Will zip response")
 
-		gz, gzipError := gzip.NewWriterLevel(rw, gzip.BestSpeed)
+		gz, gzipError := gzip.NewWriterLevel(rw, gzip.BestCompression)
 		if gzipError != nil {
 			http.Error(rw, gzipError.Error(), http.StatusBadRequest)
 			return

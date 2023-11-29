@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"compress/gzip"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
+	"github.com/sirupsen/logrus"
 )
 
 type PostHandler struct {
@@ -16,7 +18,26 @@ type PostHandler struct {
 }
 
 func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	body, _ := io.ReadAll(req.Body)
+	var reader io.Reader
+
+	if req.Header.Get(`Content-Encoding`) == `gzip` {
+		gz, err := gzip.NewReader(req.Body)
+		if err != nil {
+			logrus.Debug("Error with gzip")
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		reader = gz
+		defer gz.Close()
+	} else {
+		reader = req.Body
+	}
+
+	body, ioError := io.ReadAll(reader)
+	if ioError != nil {
+		http.Error(res, ioError.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// парсим URL @todo надо найти лучше способ валидации URL
 	_, error := url.ParseRequestURI(string(body))
