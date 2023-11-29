@@ -77,11 +77,11 @@ func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, error.Error(), http.StatusBadRequest)
 		return
 	} else {
-		var resJson responseJSON
-		resJson.Result = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, code)
+		var resJSON responseJSON
+		resJSON.Result = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, code)
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(http.StatusCreated)
-		error := json.NewEncoder(res).Encode(resJson)
+		error := json.NewEncoder(res).Encode(resJSON)
 		if error != nil {
 			http.Error(res, error.Error(), http.StatusBadRequest)
 			return
