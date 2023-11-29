@@ -57,6 +57,7 @@ func main() {
 	// router.Use(middleware.Recoverer)
 
 	router.Use(middlewares.WithLoggingMiddleWare)
+	router.Use(middlewares.WithCompressionResponse)
 
 	router.Post("/", postHandler.ServeHTTP)
 	router.Get("/{linkCode}", getHandler.ServeHTTP)
