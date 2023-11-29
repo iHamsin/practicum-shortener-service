@@ -60,15 +60,16 @@ func TestStatusHandlerJson(t *testing.T) {
 			}
 			body, _ := json.Marshal(mcPostBody)
 
-			var buf bytes.Buffer
-			gz := gzip.NewWriter(&buf)
-			_, err := gz.Write(body)
+			buf := bytes.NewBuffer(nil)
+			zb := gzip.NewWriter(buf)
+			_, err := zb.Write([]byte(body))
 			if err != nil {
-				fmt.Println("gzip try error")
+				fmt.Println(err)
 			}
-			gz.Close()
 
-			request := httptest.NewRequest(http.MethodPost, "/api/shorten", &buf)
+			zb.Close()
+
+			request := httptest.NewRequest(http.MethodPost, "/api/shorten", buf)
 
 			request.Header.Set("Content-Type", "application/json; charset=utf-8")
 			request.Header.Set("Content-Encoding", "gzip")
@@ -78,7 +79,8 @@ func TestStatusHandlerJson(t *testing.T) {
 			defer res.Body.Close()
 			resBody, _ := io.ReadAll(res.Body)
 
-			fmt.Println("test")
+			fmt.Println("------")
+			fmt.Println(buf)
 			fmt.Println(string(resBody))
 
 			// проверяем код ответа
