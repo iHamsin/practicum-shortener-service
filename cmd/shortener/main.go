@@ -9,6 +9,7 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/handlers"
+	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 	"github.com/sirupsen/logrus"
 
@@ -49,6 +50,12 @@ func main() {
 
 	postHandler := &handlers.PostHandler{Repo: repository, Cfg: *cfg}
 	getHandler := &handlers.GetHandler{Repo: repository, Cfg: *cfg}
+
+	// Logger from Chi, too easy, will write custom with Logrus
+	// router.Use(middleware.Logger)
+	// router.Use(middleware.Recoverer)
+
+	router.Use(middlewares.WithLoggingMiddleWare)
 
 	router.Post("/", postHandler.ServeHTTP)
 	router.Get("/{linkCode}", getHandler.ServeHTTP)
