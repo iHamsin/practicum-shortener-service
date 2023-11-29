@@ -20,9 +20,9 @@ type linksRepoInFile struct {
 
 // Link -.
 type linkItem struct {
-	UUID         int    `json:"uuid"`
-	Short_url    string `json:"short_url"`
-	Original_url string `json:"original_url"`
+	UUID        int    `json:"uuid"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 
 // New -.
@@ -38,11 +38,11 @@ func NewLinksRepoFile(file os.File) (*linksRepoInFile, error) {
 }
 
 // Insert -.
-func (r *linksRepoInFile) Insert(original_url string) (string, error) {
+func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
 	short_url := util.RandomString(8)
 
 	r.lastUUID++
-	var link = linkItem{r.lastUUID, short_url, original_url}
+	var link = linkItem{r.lastUUID, short_url, originalURL}
 
 	jsonLink, jsonEncodeError := json.Marshal(link)
 	if jsonEncodeError != nil {
@@ -58,7 +58,7 @@ func (r *linksRepoInFile) Insert(original_url string) (string, error) {
 }
 
 // GetByCode -.
-func (r *linksRepoInFile) GetByCode(short_url string) (string, error) {
+func (r *linksRepoInFile) GetByCode(shortURL string) (string, error) {
 
 	scanner := bufio.NewScanner(&r.file)
 	_, cursorResetError := r.file.Seek(0, io.SeekStart)
@@ -69,8 +69,8 @@ func (r *linksRepoInFile) GetByCode(short_url string) (string, error) {
 	var nextLink linkItem
 	for scanner.Scan() {
 		_ = json.Unmarshal(scanner.Bytes(), &nextLink)
-		if nextLink.Short_url == short_url {
-			return nextLink.Original_url, nil
+		if nextLink.ShortURL == shortURL {
+			return nextLink.OriginalURL, nil
 		}
 	}
 

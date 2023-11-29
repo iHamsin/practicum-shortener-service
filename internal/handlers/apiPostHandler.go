@@ -13,20 +13,20 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type ApiPostHandler struct {
+type APIPostHandler struct {
 	Repo repositories.Repository
 	Cfg  config.Config
 }
 
-type requestJson struct {
-	Url string
+type requestJSON struct {
+	URL string
 }
 
-type responseJson struct {
+type responseJSON struct {
 	Result string `json:"result"`
 }
 
-func (h *ApiPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	var reader io.Reader
 
@@ -49,7 +49,7 @@ func (h *ApiPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var reqJson requestJson
+	var reqJson requestJSON
 	jsonError := json.Unmarshal(body, &reqJson)
 	if jsonError != nil {
 		http.Error(res, jsonError.Error(), http.StatusBadRequest)
@@ -57,7 +57,7 @@ func (h *ApiPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// парсим URL @todo надо найти лучше способ валидации URL
-	_, error := url.ParseRequestURI(reqJson.Url)
+	_, error := url.ParseRequestURI(reqJson.URL)
 
 	if error != nil {
 		http.Error(res, error.Error(), http.StatusBadRequest)
@@ -71,13 +71,13 @@ func (h *ApiPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// сохраняем линк
-	code, error := h.Repo.Insert(reqJson.Url)
+	code, error := h.Repo.Insert(reqJson.URL)
 
 	if error != nil {
 		http.Error(res, error.Error(), http.StatusBadRequest)
 		return
 	} else {
-		var resJson responseJson
+		var resJson responseJSON
 		resJson.Result = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, code)
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(http.StatusCreated)

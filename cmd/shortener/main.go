@@ -73,7 +73,7 @@ func main() {
 
 	postHandler := &handlers.PostHandler{Repo: repository, Cfg: *cfg}
 	getHandler := &handlers.GetHandler{Repo: repository, Cfg: *cfg}
-	apiPostHandler := &handlers.ApiPostHandler{Repo: repository, Cfg: *cfg}
+	apiPostHandler := &handlers.APIPostHandler{Repo: repository, Cfg: *cfg}
 
 	// Logger from Chi, too easy, will write custom with Logrus
 	// router.Use(middleware.Logger)

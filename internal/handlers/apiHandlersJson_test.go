@@ -52,7 +52,7 @@ func TestStatusHandlerGzipJson(t *testing.T) {
 			cfg.HTTP.Addr = test.want.httpAddr
 			cfg.HTTP.BaseURL = test.want.httpBaseURL
 
-			postHandler := ApiPostHandler{Repo: repository, Cfg: *cfg}
+			postHandler := APIPostHandler{Repo: repository, Cfg: *cfg}
 
 			mcPostBody := map[string]interface{}{
 				"url": "https://practicum.yandex.ru",
