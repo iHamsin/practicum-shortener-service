@@ -39,10 +39,10 @@ func NewLinksRepoFile(file os.File) (*linksRepoInFile, error) {
 
 // Insert -.
 func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
-	short_url := util.RandomString(8)
+	shortURL := util.RandomString(8)
 
 	r.lastUUID++
-	var link = linkItem{r.lastUUID, short_url, originalURL}
+	var link = linkItem{r.lastUUID, shortURL, originalURL}
 
 	jsonLink, jsonEncodeError := json.Marshal(link)
 	if jsonEncodeError != nil {
@@ -54,7 +54,7 @@ func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
 		return "", fileWriteError
 	}
 
-	return short_url, nil
+	return shortURL, nil
 }
 
 // GetByCode -.
