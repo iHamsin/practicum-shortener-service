@@ -49,15 +49,15 @@ func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var reqJson requestJSON
-	jsonError := json.Unmarshal(body, &reqJson)
+	var reqJSON requestJSON
+	jsonError := json.Unmarshal(body, &reqJSON)
 	if jsonError != nil {
 		http.Error(res, jsonError.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// парсим URL @todo надо найти лучше способ валидации URL
-	_, error := url.ParseRequestURI(reqJson.URL)
+	_, error := url.ParseRequestURI(reqJSON.URL)
 
 	if error != nil {
 		http.Error(res, error.Error(), http.StatusBadRequest)
@@ -71,7 +71,7 @@ func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// сохраняем линк
-	code, error := h.Repo.Insert(reqJson.URL)
+	code, error := h.Repo.Insert(reqJSON.URL)
 
 	if error != nil {
 		http.Error(res, error.Error(), http.StatusBadRequest)
