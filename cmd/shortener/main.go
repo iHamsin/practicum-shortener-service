@@ -16,12 +16,18 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func init() {
-	lvl, ok := os.LookupEnv("LOG_LEVEL")
-	// LOG_LEVEL not set, let's default to debug
-	if !ok {
+func main() {
+
+	lvl, gotLvl := os.LookupEnv("LOG_LEVEL")
+	if !gotLvl {
 		lvl = "debug"
 	}
+
+	dbFile, gotDBFile := os.LookupEnv("FILE_STORAGE_PATH")
+	if !gotDBFile {
+		dbFile = "/tmp/short-url-db.json"
+	}
+
 	// parse string, this is built-in feature of logrus
 	ll, err := logrus.ParseLevel(lvl)
 	if err != nil {
@@ -29,13 +35,12 @@ func init() {
 	}
 	// set global log level
 	logrus.SetLevel(ll)
-}
 
-func main() {
 	cfg := &config.Config{}
 
 	flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "HTTP server addr. Default: localhost:8080")
 	flag.StringVar(&cfg.HTTP.BaseURL, "b", "http://localhost:8080", "Short link BaseURL. Default: http://localhost:8080")
+	flag.StringVar(&cfg.HTTP.DBFile, "f", dbFile, "DB file. Default: /tmp/short-url-db.json")
 	flag.Parse()
 
 	configError := env.Parse(&cfg.HTTP)
@@ -43,8 +48,26 @@ func main() {
 		logrus.Error(configError)
 	}
 
+	var repository repositories.Repository
+	if cfg.HTTP.DBFile == "" {
+		logrus.Debug("DB in RAM")
+		repository = repositories.NewLinksRepoRAM(make(map[string]string))
+	} else {
+		logrus.Debug("DB in file", cfg.HTTP.DBFile)
+
+		file, fileOpenError := os.OpenFile(cfg.HTTP.DBFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if fileOpenError != nil {
+			logrus.Error(fileOpenError)
+		}
+		defer file.Close()
+
+		var fileRepoError error
+		repository, fileRepoError = repositories.NewLinksRepoFile(*file)
+		if fileRepoError != nil {
+			logrus.Error(fileRepoError)
+		}
+	}
 	// хранилище пока в памяти
-	repository := repositories.NewLinksRepoRAM(make(map[string]string))
 
 	router := chi.NewRouter()
 

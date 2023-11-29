@@ -40,4 +40,10 @@ git fetch template && git checkout template/main .github
 Подробнее про локальный и автоматический запуск читайте в [README автотестов](https://github.com/Yandex-Practicum/go-autotests).
 
 ## DEV запуск
-SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-"
+SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-" -f "./temp.db"
+
+SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" FILE_STORAGE_PATH="./ENVDB.db" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-"
+
+SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" FILE_STORAGE_PATH="" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-"
+
+SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-" -f ""
