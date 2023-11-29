@@ -1,3 +1,11 @@
+# Codecov badge
+
+[![codecov](https://codecov.io/gh/iHamsin/practicum-shortener-service/graph/badge.svg?token=Z6XZR4AYOB)](https://codecov.io/gh/iHamsin/practicum-shortener-service)
+
+
+[![codecov](https://codecov.io/gh/iHamsin/practicum-shortener-service/graphs/sunburst.svg?token=Z6XZR4AYOB)](https://codecov.io/gh/iHamsin/practicum-shortener-service)
+
+
 # go-musthave-shortener-tpl
 
 Шаблон репозитория для трека «Сервис сокращения URL».
@@ -30,3 +38,6 @@ git fetch template && git checkout template/main .github
 При мёрже ветки с инкрементом в основную ветку `main` будут запускаться все автотесты.
 
 Подробнее про локальный и автоматический запуск читайте в [README автотестов](https://github.com/Yandex-Practicum/go-autotests).
+
+## DEV запуск
+SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-"
