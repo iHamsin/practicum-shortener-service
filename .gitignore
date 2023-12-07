@@ -26,3 +26,4 @@ vendor/
 .DS_Store
 ./shortener
 __*
+.golangci.yml
