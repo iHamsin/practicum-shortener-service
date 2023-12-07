@@ -17,12 +17,12 @@ func NewLinksRepoRAM(storage map[string]string) *linksRepoInRAM {
 }
 
 // Insert -.
-func (r *linksRepoInRAM) Insert(link string) (string, error) {
+func (r *linksRepoInRAM) Insert(originalURL string) (string, error) {
 	// генерируем ключ и проверяем на наличие такого в хранилище
 	var linkKey string
 	var i = 0
 	for {
-		linkKey = util.RandomString(8)
+		linkKey = util.RandomString(cfg.ShortCodeLength)
 		_, keyUsed := r.storage[linkKey]
 		if !keyUsed {
 			break
@@ -33,16 +33,21 @@ func (r *linksRepoInRAM) Insert(link string) (string, error) {
 			return "", errors.New("cant generate uniq link short code")
 		}
 	}
-	r.storage[linkKey] = link
+	r.storage[linkKey] = originalURL
 	return linkKey, nil
 }
 
 // GetByCode -.
-func (r *linksRepoInRAM) GetByCode(linkCode string) (string, error) {
+func (r *linksRepoInRAM) GetByCode(shortURL string) (string, error) {
 	// проверка наличия в хранилище
-	_, URLfound := r.storage[linkCode]
+	_, URLfound := r.storage[shortURL]
 	if !URLfound {
 		return "", errors.New("link not found")
 	}
-	return r.storage[linkCode], nil
+	return r.storage[shortURL], nil
+}
+
+// Close -.
+func (r *linksRepoInRAM) Close() {
+
 }

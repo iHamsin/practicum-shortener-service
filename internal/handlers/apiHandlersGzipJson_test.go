@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"bytes"
+	"compress/gzip"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,7 +16,7 @@ import (
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 )
 
-func TestStatusHandler(t *testing.T) {
+func TestStatusHandlerJson(t *testing.T) {
 	type want struct {
 		postCode          int
 		getCode           int
@@ -29,29 +32,16 @@ func TestStatusHandler(t *testing.T) {
 		want want
 	}{
 		{
-			name: "positive test #1",
+			name: "test json",
 			want: want{
 				postCode:          201,
 				getCode:           304,
-				postBody:          "http://ok.kz",
-				bodySize:          30,
+				postBody:          `{"url": "https://ok.kz"}`,
+				bodySize:          44,
 				checkResponceBody: false,
 				responceBody:      "",
-				httpAddr:          "localhost:8080",
+				httpAddr:          "localhost:8080/api/shorten",
 				httpBaseURL:       "http://localhost:8080",
-			},
-		},
-		{
-			name: "positive test #2",
-			want: want{
-				postCode:          400,
-				getCode:           400,
-				postBody:          "blablabla",
-				bodySize:          43,
-				checkResponceBody: true,
-				responceBody:      "parse \"blablabla\": invalid URI for request\n",
-				httpAddr:          "localhost:9090",
-				httpBaseURL:       "http://localhost:9090/prefix-",
 			},
 		},
 	}
@@ -65,15 +55,36 @@ func TestStatusHandler(t *testing.T) {
 
 			var repository, _ = repositories.Init(cfg)
 
-			postHandler := PostHandler{Repo: repository, Cfg: cfg}
-			getHandler := GetHandler{Repo: repository, Cfg: cfg}
+			postHandler := APIPostHandler{Repo: repository, Cfg: cfg}
 
-			request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(test.want.postBody))
+			mcPostBody := map[string]interface{}{
+				"url": "https://practicum.yandex.ru",
+			}
+			body, _ := json.Marshal(mcPostBody)
+
+			buf := bytes.NewBuffer(nil)
+			zb := gzip.NewWriter(buf)
+			_, err := zb.Write([]byte(body))
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			zb.Close()
+
+			request := httptest.NewRequest(http.MethodPost, "/api/shorten", buf)
+
+			request.Header.Set("Content-Type", "application/json; charset=utf-8")
+			request.Header.Set("Content-Encoding", "gzip")
 			w := httptest.NewRecorder()
 			postHandler.ServeHTTP(w, request)
 			res := w.Result()
 			defer res.Body.Close()
 			resBody, _ := io.ReadAll(res.Body)
+
+			fmt.Println("------")
+			fmt.Println(buf)
+			fmt.Println(string(resBody))
+
 			// проверяем код ответа
 			assert.Equal(t, test.want.postCode, res.StatusCode)
 			// проверяем длину ответа, код рандомный, только так
@@ -82,18 +93,11 @@ func TestStatusHandler(t *testing.T) {
 				// проверяем содержание ответа если там ошибка
 				assert.Equal(t, string(resBody), test.want.responceBody)
 			}
+
 			// если была ошибка, выходим, проверять GET нет смысла
 			if test.want.postCode == 400 {
 				return
 			}
-
-			request = httptest.NewRequest(http.MethodGet, string(resBody), nil)
-			w = httptest.NewRecorder()
-			getHandler.ServeHTTP(w, request)
-			res = w.Result()
-			defer res.Body.Close()
-			// проверяем возврат линка по сохраненному коду
-			assert.Equal(t, res.Header.Get("Location"), test.want.postBody)
 		})
 	}
 }

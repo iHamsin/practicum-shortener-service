@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,12 +13,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type PostHandler struct {
+type APIPostHandler struct {
 	Repo repositories.Repository
 	Cfg  *config.Config
 }
 
-func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+type requestJSON struct {
+	URL string
+}
+
+type responseJSON struct {
+	Result string `json:"result"`
+}
+
+func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+
 	var reader io.Reader
 
 	if req.Header.Get(`Content-Encoding`) == `gzip` {
@@ -39,8 +49,15 @@ func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var reqJSON requestJSON
+	jsonError := json.Unmarshal(body, &reqJSON)
+	if jsonError != nil {
+		http.Error(res, jsonError.Error(), http.StatusBadRequest)
+		return
+	}
+
 	// парсим URL @todo надо найти лучше способ валидации URL
-	_, error := url.ParseRequestURI(string(body))
+	_, error := url.ParseRequestURI(reqJSON.URL)
 
 	if error != nil {
 		http.Error(res, error.Error(), http.StatusBadRequest)
@@ -54,13 +71,17 @@ func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// сохраняем линк
-	code, error := h.Repo.Insert(string(body))
+	code, error := h.Repo.Insert(reqJSON.URL)
+
 	if error != nil {
 		http.Error(res, error.Error(), http.StatusBadRequest)
 		return
 	} else {
+		var resJSON responseJSON
+		resJSON.Result = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, code)
+		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(http.StatusCreated)
-		_, error := res.Write([]byte(fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, code)))
+		error := json.NewEncoder(res).Encode(resJSON)
 		if error != nil {
 			http.Error(res, error.Error(), http.StatusBadRequest)
 			return
