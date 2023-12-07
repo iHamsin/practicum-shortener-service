@@ -14,7 +14,7 @@ import (
 
 type PostHandler struct {
 	Repo repositories.Repository
-	Cfg  config.Config
+	Cfg  *config.Config
 }
 
 func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {

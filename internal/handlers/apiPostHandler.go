@@ -15,7 +15,7 @@ import (
 
 type APIPostHandler struct {
 	Repo repositories.Repository
-	Cfg  config.Config
+	Cfg  *config.Config
 }
 
 type requestJSON struct {

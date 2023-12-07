@@ -58,13 +58,15 @@ func TestStatusHandler(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
-			repository := repositories.NewLinksRepoRAM(make(map[string]string))
 			cfg := new(config.Config)
 			cfg.HTTP.Addr = test.want.httpAddr
 			cfg.HTTP.BaseURL = test.want.httpBaseURL
+			cfg.Repository.ShortCodeLength = 8
 
-			postHandler := PostHandler{Repo: repository, Cfg: *cfg}
-			getHandler := GetHandler{Repo: repository, Cfg: *cfg}
+			var repository, _ = repositories.Init(cfg)
+
+			postHandler := PostHandler{Repo: repository, Cfg: cfg}
+			getHandler := GetHandler{Repo: repository, Cfg: cfg}
 
 			request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(test.want.postBody))
 			w := httptest.NewRecorder()

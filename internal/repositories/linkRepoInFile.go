@@ -39,7 +39,7 @@ func NewLinksRepoFile(file os.File) (*linksRepoInFile, error) {
 
 // Insert -.
 func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
-	shortURL := util.RandomString(8)
+	shortURL := util.RandomString(cfg.ShortCodeLength)
 
 	r.lastUUID++
 	var link = linkItem{r.lastUUID, shortURL, originalURL}
@@ -78,4 +78,9 @@ func (r *linksRepoInFile) GetByCode(shortURL string) (string, error) {
 		log.Fatal(err)
 	}
 	return "", errors.New("link not found")
+}
+
+// Close -.
+func (r *linksRepoInFile) Close() {
+	r.file.Close()
 }

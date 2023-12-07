@@ -12,7 +12,7 @@ import (
 
 type GetHandler struct {
 	Repo repositories.Repository
-	Cfg  config.Config
+	Cfg  *config.Config
 }
 
 func (h *GetHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {

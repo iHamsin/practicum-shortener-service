@@ -47,12 +47,14 @@ func TestStatusHandlerGzipJson(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
-			repository := repositories.NewLinksRepoRAM(make(map[string]string))
 			cfg := new(config.Config)
 			cfg.HTTP.Addr = test.want.httpAddr
 			cfg.HTTP.BaseURL = test.want.httpBaseURL
+			cfg.Repository.ShortCodeLength = 8
 
-			postHandler := APIPostHandler{Repo: repository, Cfg: *cfg}
+			var repository, _ = repositories.Init(cfg)
+
+			postHandler := APIPostHandler{Repo: repository, Cfg: cfg}
 
 			mcPostBody := map[string]interface{}{
 				"url": "https://practicum.yandex.ru",

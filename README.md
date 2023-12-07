@@ -40,6 +40,7 @@ git fetch template && git checkout template/main .github
 Подробнее про локальный и автоматический запуск читайте в [README автотестов](https://github.com/Yandex-Practicum/go-autotests).
 
 ## DEV запуск
+
 SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-" -f "./temp.db"
 
 SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" FILE_STORAGE_PATH="./ENVDB.db" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-"
@@ -47,3 +48,43 @@ SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" FILE_STORA
 SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" FILE_STORAGE_PATH="" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-"
 
 SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-" -f ""
+
+## Локальный запуск GitHub Actions
+
+https://github.com/Yandex-Practicum/go-autotests
+На github используется v0.10.2 shortenertestbeta-darwin-arm64
+https://github.com/Yandex-Practicum/go-autotests/releases/download/v0.10.2/shortenertestbeta-darwin-arm64
+
+chmod +x shortenertest 
+
+## Запуск конкретного action
+
+```
+act -j build --container-architecture linux/amd64
+act -j golangci --container-architecture linux/amd64
+```
+
+## запуск golangci-lint
+```
+./tests/golangci-lint run ./...
+```
+
+## запуск statictest
+
+```
+go vet -vettool=./tests/statictest  ./...
+```
+
+## запуск всех автотестов от YP
+
+```
+go build -o ./tests/ ./cmd/shortener &&
+./tests/shortenertest -test.v -binary-path=./tests/shortener -source-path=./ -file-storage-path=./tests/main.db -server-port=8080
+```
+
+## запуск конкретного автотеста от YP
+
+```
+go build -o ./tests/ ./cmd/shortener &&
+./tests/shortenertest -test.v -test.run=^TestIteration9$ -binary-path=./tests/shortener -source-path=./ -file-storage-path=./tests/main.db -server-port=8080
+```

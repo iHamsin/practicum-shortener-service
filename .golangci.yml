@@ -1,0 +1,12 @@
+linters:
+  # Disable all linters.
+  # Default: false
+  enable:
+    - gofmt
+    - staticcheck
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - unused
+    - gomnd

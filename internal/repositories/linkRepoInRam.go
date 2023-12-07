@@ -22,7 +22,7 @@ func (r *linksRepoInRAM) Insert(originalURL string) (string, error) {
 	var linkKey string
 	var i = 0
 	for {
-		linkKey = util.RandomString(8)
+		linkKey = util.RandomString(cfg.ShortCodeLength)
 		_, keyUsed := r.storage[linkKey]
 		if !keyUsed {
 			break
@@ -45,4 +45,9 @@ func (r *linksRepoInRAM) GetByCode(shortURL string) (string, error) {
 		return "", errors.New("link not found")
 	}
 	return r.storage[shortURL], nil
+}
+
+// Close -.
+func (r *linksRepoInRAM) Close() {
+
 }
