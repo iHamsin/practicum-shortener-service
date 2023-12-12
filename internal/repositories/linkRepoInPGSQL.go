@@ -14,6 +14,8 @@ type linkRepoInPGSQL struct {
 	db *pgx.Conn
 }
 
+var ErrDublicateOriginalLink = errors.New("dublicate orgiginal link")
+
 // Link -.
 // type linkInSQLItem struct {
 // 	UUID        int    `json:"uuid"`
@@ -38,6 +40,7 @@ func (r *linkRepoInPGSQL) Insert(originalURL string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		return shortURL, ErrDublicateOriginalLink
 	}
 	return shortURL, nil
 }

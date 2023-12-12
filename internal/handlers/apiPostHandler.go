@@ -3,6 +3,7 @@ package handlers
 import (
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -73,14 +74,18 @@ func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	// сохраняем линк
 	code, error := h.Repo.Insert(reqJSON.URL)
 
-	if error != nil {
+	if error != nil && !errors.Is(error, repositories.ErrDublicateOriginalLink) {
 		http.Error(res, error.Error(), http.StatusBadRequest)
 		return
 	} else {
 		var resJSON responseJSON
 		resJSON.Result = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, code)
 		res.Header().Set("Content-Type", "application/json")
-		res.WriteHeader(http.StatusCreated)
+		if errors.Is(error, repositories.ErrDublicateOriginalLink) {
+			res.WriteHeader(http.StatusConflict)
+		} else {
+			res.WriteHeader(http.StatusCreated)
+		}
 		error := json.NewEncoder(res).Encode(resJSON)
 		if error != nil {
 			http.Error(res, error.Error(), http.StatusBadRequest)
