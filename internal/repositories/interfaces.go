@@ -34,8 +34,7 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 			repository = NewLinksRepoPGSQL(db)
 
 			createTableSQL := `
-				DROP TABLE IF EXISTS "public"."links";
-				CREATE TABLE "public"."links" (
+				CREATE TABLE IF NOT EXISTS  "public"."links" (
 				"id" int4 NOT NULL GENERATED ALWAYS AS IDENTITY (
 				INCREMENT 1
 				MINVALUE  1
