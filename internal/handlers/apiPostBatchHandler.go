@@ -60,7 +60,6 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 	}
 	originalLinks := make([]string, len(links))
 	for i, link := range links {
-		logrus.Debug(link.CorrelationID, link.OriginalURL)
 		originalLinks[i] = link.OriginalURL
 		results[i] = responseBatchJSON{CorrelationID: link.CorrelationID, ShortURL: ""}
 	}

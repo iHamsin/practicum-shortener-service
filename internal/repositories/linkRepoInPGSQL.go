@@ -29,9 +29,15 @@ func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
 // Insert -.
 func (r *linkRepoInPGSQL) Insert(originalURL string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
-	_, err := r.db.Exec(context.Background(), `insert into links(original_link, short_link) values ($1, $2)`, originalURL, shortURL)
+	result, err := r.db.Exec(context.Background(), `insert into links(original_link, short_link) values ($1, $2) ON CONFLICT (original_link) DO NOTHING`, originalURL, shortURL)
 	if err != nil {
-		return shortURL, err
+		return "", err
+	}
+	if result.RowsAffected() == 0 {
+		shortURL, err = r.GetByOriginalLink(originalURL)
+		if err != nil {
+			return "", err
+		}
 	}
 	return shortURL, nil
 }
@@ -69,6 +75,18 @@ func (r *linkRepoInPGSQL) GetByCode(shortURL string) (string, error) {
 	}
 
 	return originalURL, nil
+}
+
+// GetByCode -.
+func (r *linkRepoInPGSQL) GetByOriginalLink(originalLink string) (string, error) {
+	// TODO
+	var shortLink string
+	err := r.db.QueryRow(context.Background(), "select short_link from links where original_link=$1", originalLink).Scan(&shortLink)
+	if err != nil {
+		return "", errors.New("link not found")
+	}
+
+	return shortLink, nil
 }
 
 // Close -.

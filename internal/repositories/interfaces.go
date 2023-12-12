@@ -36,17 +36,10 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 
 			createTableSQL := `
 				CREATE TABLE IF NOT EXISTS  "public"."links" (
-				"id" int4 NOT NULL GENERATED ALWAYS AS IDENTITY (
-				INCREMENT 1
-				MINVALUE  1
-				MAXVALUE 2147483647
-				START 1
-				CACHE 1
-				),
-				"original_link" text COLLATE "pg_catalog"."default" NOT NULL,
-				"short_link" text COLLATE "pg_catalog"."default" NOT NULL
+					"original_link" text COLLATE "pg_catalog"."default" NOT NULL,
+					"short_link" text COLLATE "pg_catalog"."default" NOT NULL,
+					UNIQUE(original_link)
 				);
-				ALTER TABLE "public"."links" ADD CONSTRAINT "videos_pkey" PRIMARY KEY ("id");
 				`
 			_, dbError := db.Exec(context.Background(), createTableSQL)
 			if dbError != nil {
