@@ -17,6 +17,7 @@ type Repository interface {
 	Insert(string) (string, error)
 	Check() error
 	Close()
+	BatchInsert([]string) ([]string, error)
 }
 
 func Init(incomeCfg *config.Config) (Repository, error) {

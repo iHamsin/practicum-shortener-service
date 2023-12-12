@@ -36,6 +36,29 @@ func (r *linkRepoInPGSQL) Insert(originalURL string) (string, error) {
 	return shortURL, nil
 }
 
+// BatchInsert -.
+func (r *linkRepoInPGSQL) BatchInsert(links []string) ([]string, error) {
+	result := make([]string, len(links))
+
+	tx, err := r.db.Begin(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+
+	for i, link := range links {
+		result[i] = util.RandomString(cfg.ShortCodeLength)
+		// insert
+		_, err = tx.Exec(context.TODO(), `insert into links(original_link, short_link) values ($1, $2)`, link, result[i])
+		if err != nil {
+			// если ошибка, то откатываем изменения
+			_ = tx.Rollback(context.TODO())
+			return nil, err
+		}
+	}
+	_ = tx.Commit(context.TODO())
+	return result, nil
+}
+
 // GetByCode -.
 func (r *linkRepoInPGSQL) GetByCode(shortURL string) (string, error) {
 	// TODO

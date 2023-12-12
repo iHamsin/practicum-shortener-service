@@ -57,6 +57,28 @@ func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
 	return shortURL, nil
 }
 
+// BatchInsert -.
+func (r *linksRepoInFile) BatchInsert(links []string) ([]string, error) {
+	result := make([]string, len(links))
+
+	for i, link := range links {
+		result[i] = util.RandomString(cfg.ShortCodeLength)
+		// insert
+		r.lastUUID++
+		var newLine = linkItem{r.lastUUID, result[i], link}
+		jsonLink, jsonEncodeError := json.Marshal(newLine)
+		if jsonEncodeError != nil {
+			return nil, jsonEncodeError
+		}
+		_, fileWriteError := r.file.WriteString(string(jsonLink) + "\n")
+		if fileWriteError != nil {
+			return nil, fileWriteError
+		}
+	}
+
+	return result, nil
+}
+
 // GetByCode -.
 func (r *linksRepoInFile) GetByCode(shortURL string) (string, error) {
 

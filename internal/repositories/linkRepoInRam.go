@@ -37,6 +37,18 @@ func (r *linksRepoInRAM) Insert(originalURL string) (string, error) {
 	return linkKey, nil
 }
 
+// BatchInsert -.
+func (r *linksRepoInRAM) BatchInsert(links []string) ([]string, error) {
+	result := make([]string, len(links))
+
+	for i, link := range links {
+		result[i] = util.RandomString(cfg.ShortCodeLength)
+		r.storage[result[i]] = link
+	}
+
+	return result, nil
+}
+
 // GetByCode -.
 func (r *linksRepoInRAM) GetByCode(shortURL string) (string, error) {
 	// проверка наличия в хранилище
