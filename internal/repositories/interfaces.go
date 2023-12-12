@@ -23,7 +23,7 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 	cfg = incomeCfg
 	var repository Repository
 	var outError error
-	if cfg.HTTP.DBFile == "" && cfg.Repository.DatabaseDSN != "" {
+	if cfg.Repository.DatabaseDSN != "" {
 		logrus.Info("DB in postgres", cfg.Repository.DatabaseDSN)
 
 		db, postgresOpenError := pgx.Connect(context.Background(), cfg.Repository.DatabaseDSN)
@@ -56,7 +56,7 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 			}
 
 		}
-	} else if cfg.HTTP.DBFile != "" && cfg.Repository.DatabaseDSN == "" {
+	} else if cfg.HTTP.DBFile != "" {
 		logrus.Debug("DB in file", cfg.HTTP.DBFile)
 
 		file, fileOpenError := os.OpenFile(cfg.HTTP.DBFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
