@@ -19,12 +19,12 @@ type APIPostBatchHandler struct {
 }
 
 type requestBatchJSON struct {
-	CorrelationId string `json:"correlation_id"`
+	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url"`
 }
 
 type responseBatchJSON struct {
-	CorrelationId string `json:"correlation_id"`
+	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
@@ -60,9 +60,9 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 	}
 	originalLinks := make([]string, len(links))
 	for i, link := range links {
-		logrus.Debug(link.CorrelationId, link.OriginalURL)
+		logrus.Debug(link.CorrelationID, link.OriginalURL)
 		originalLinks[i] = link.OriginalURL
-		results[i] = responseBatchJSON{CorrelationId: link.CorrelationId, ShortURL: ""}
+		results[i] = responseBatchJSON{CorrelationID: link.CorrelationID, ShortURL: ""}
 	}
 	shortLinks, repoError := h.Repo.BatchInsert(originalLinks)
 	if repoError != nil {
