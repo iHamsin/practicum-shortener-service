@@ -15,11 +15,11 @@ type linkRepoInPGSQL struct {
 }
 
 // Link -.
-type linkInSQLItem struct {
-	UUID        int    `json:"uuid"`
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
+// type linkInSQLItem struct {
+// 	UUID        int    `json:"uuid"`
+// 	ShortURL    string `json:"short_url"`
+// 	OriginalURL string `json:"original_url"`
+// }
 
 // New -.
 func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
