@@ -32,6 +32,29 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 			repository = nil
 		} else {
 			repository = NewLinksRepoPGSQL(db)
+
+			createTableSQL := `
+				DROP TABLE IF EXISTS "public"."links";
+				CREATE TABLE "public"."links" (
+				"id" int4 NOT NULL GENERATED ALWAYS AS IDENTITY (
+				INCREMENT 1
+				MINVALUE  1
+				MAXVALUE 2147483647
+				START 1
+				CACHE 1
+				),
+				"original_link" text COLLATE "pg_catalog"."default" NOT NULL,
+				"short_link" text COLLATE "pg_catalog"."default" NOT NULL
+				);
+				ALTER TABLE "public"."links" ADD CONSTRAINT "videos_pkey" PRIMARY KEY ("id");
+				`
+			_, dbError := db.Exec(context.Background(), createTableSQL)
+			if dbError != nil {
+				logrus.Error(dbError)
+			} else {
+				logrus.Info("Tables created")
+			}
+
 		}
 	} else if cfg.HTTP.DBFile != "" && cfg.Repository.DatabaseDSN == "" {
 		logrus.Debug("DB in file", cfg.HTTP.DBFile)

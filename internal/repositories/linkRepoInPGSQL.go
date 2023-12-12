@@ -29,13 +29,23 @@ func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
 // Insert -.
 func (r *linkRepoInPGSQL) Insert(originalURL string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
-
+	_, err := r.db.Exec(context.Background(), `insert into links(original_link, short_link) values ($1, $2)`, originalURL, shortURL)
+	if err != nil {
+		return shortURL, err
+	}
 	return shortURL, nil
 }
 
 // GetByCode -.
 func (r *linkRepoInPGSQL) GetByCode(shortURL string) (string, error) {
-	return "", errors.New("link not found")
+	// TODO
+	var originalURL string
+	err := r.db.QueryRow(context.Background(), "select original_link from links where short_link=$1", shortURL).Scan(&originalURL)
+	if err != nil {
+		return "", errors.New("link not found")
+	}
+
+	return originalURL, nil
 }
 
 // Close -.
