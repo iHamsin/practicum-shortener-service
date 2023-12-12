@@ -84,3 +84,8 @@ func (r *linksRepoInFile) GetByCode(shortURL string) (string, error) {
 func (r *linksRepoInFile) Close() {
 	r.file.Close()
 }
+
+// Check -.
+func (r *linksRepoInFile) Check() error {
+	return nil
+}

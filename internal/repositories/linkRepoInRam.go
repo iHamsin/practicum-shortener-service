@@ -51,3 +51,8 @@ func (r *linksRepoInRAM) GetByCode(shortURL string) (string, error) {
 func (r *linksRepoInRAM) Close() {
 
 }
+
+// Check -.
+func (r *linksRepoInRAM) Check() error {
+	return nil
+}

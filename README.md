@@ -49,6 +49,8 @@ SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" FILE_STORA
 
 SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-" -f ""
 
+SERVER_ADDRESS="localhost:7070" BASE_URL="http://localhost:7070/env-" go run ./cmd/shortener/main.go -a "localhost:8090" -b "http://localhost:8090/abc-" -f "" -d "host=localhost user=yp password=passw0rd sslmode=disable"
+
 ## Локальный запуск GitHub Actions
 
 https://github.com/Yandex-Practicum/go-autotests
@@ -86,5 +88,10 @@ go build -o ./tests/ ./cmd/shortener &&
 
 ```
 go build -o ./tests/ ./cmd/shortener &&
-./tests/shortenertest -test.v -test.run=^TestIteration9$ -binary-path=./tests/shortener -source-path=./ -file-storage-path=./tests/main.db -server-port=8080
+./tests/shortenertest -test.v -test.run=^TestIteration10$ -binary-path=./tests/shortener -source-path=./ -file-storage-path=./tests/main.db -server-port=8080
+```
+
+```
+go build -o ./tests/ ./cmd/shortener &&
+./tests/shortenertest -test.v -test.run=^TestIteration10$ -binary-path=./tests/shortener -source-path=./ -file-storage-path=./tests/main.db -server-port=8080 -database-dsn="host=localhost user=yp password=pa$$e0rd dbname=shortener sslmode=disable"
 ```

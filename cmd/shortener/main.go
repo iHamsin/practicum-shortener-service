@@ -33,9 +33,10 @@ func main() {
 
 	var repository, repoError = repositories.Init(&cfg)
 	if repoError != nil {
-		logrus.Error(configError)
+		logrus.Error(repoError)
+	} else {
+		defer repository.Close()
 	}
-	defer repository.Close()
 
 	router := routes.Init(repository, cfg)
 	serverError := http.ListenAndServe(cfg.HTTP.Addr, router)
