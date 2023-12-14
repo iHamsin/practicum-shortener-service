@@ -17,7 +17,7 @@ func NewLinksRepoRAM(storage map[string]string) *linksRepoInRAM {
 }
 
 // Insert -.
-func (r *linksRepoInRAM) Insert(originalURL string) (string, error) {
+func (r *linksRepoInRAM) InsertLink(originalURL string) (string, error) {
 	// генерируем ключ и проверяем на наличие такого в хранилище
 	var linkKey string
 	var i = 0
@@ -38,7 +38,7 @@ func (r *linksRepoInRAM) Insert(originalURL string) (string, error) {
 }
 
 // BatchInsert -.
-func (r *linksRepoInRAM) BatchInsert(links []string) ([]string, error) {
+func (r *linksRepoInRAM) BatchInsertLink(links []string) ([]string, error) {
 	result := make([]string, len(links))
 
 	for i, link := range links {
@@ -50,7 +50,7 @@ func (r *linksRepoInRAM) BatchInsert(links []string) ([]string, error) {
 }
 
 // GetByCode -.
-func (r *linksRepoInRAM) GetByCode(shortURL string) (string, error) {
+func (r *linksRepoInRAM) GetLinkByCode(shortURL string) (string, error) {
 	// проверка наличия в хранилище
 	_, URLfound := r.storage[shortURL]
 	if !URLfound {

@@ -72,7 +72,7 @@ func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// сохраняем линк
-	code, error := h.Repo.Insert(reqJSON.URL)
+	code, error := h.Repo.InsertLink(reqJSON.URL)
 
 	if error != nil && !errors.Is(error, repositories.ErrDublicateOriginalLink) {
 		http.Error(res, error.Error(), http.StatusBadRequest)

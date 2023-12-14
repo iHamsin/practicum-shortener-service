@@ -13,11 +13,11 @@ var cfg *config.Config
 
 type Repository interface {
 	// GetAll() (map[string]string, error)
-	GetByCode(string) (string, error)
-	Insert(string) (string, error)
+	GetLinkByCode(string) (string, error)
+	InsertLink(string) (string, error)
 	Check() error
 	Close()
-	BatchInsert([]string) ([]string, error)
+	BatchInsertLink([]string) ([]string, error)
 }
 
 func Init(incomeCfg *config.Config) (Repository, error) {

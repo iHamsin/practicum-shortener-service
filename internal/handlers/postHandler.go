@@ -55,7 +55,7 @@ func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// сохраняем линк
-	code, error := h.Repo.Insert(string(body))
+	code, error := h.Repo.InsertLink(string(body))
 	if error != nil && !errors.Is(error, repositories.ErrDublicateOriginalLink) {
 		http.Error(res, error.Error(), http.StatusBadRequest)
 		return

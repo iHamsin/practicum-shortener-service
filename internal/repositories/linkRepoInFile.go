@@ -38,7 +38,7 @@ func NewLinksRepoFile(file os.File) (*linksRepoInFile, error) {
 }
 
 // Insert -.
-func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
+func (r *linksRepoInFile) InsertLink(originalURL string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
 
 	r.lastUUID++
@@ -58,7 +58,7 @@ func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
 }
 
 // BatchInsert -.
-func (r *linksRepoInFile) BatchInsert(links []string) ([]string, error) {
+func (r *linksRepoInFile) BatchInsertLink(links []string) ([]string, error) {
 	result := make([]string, len(links))
 
 	for i, link := range links {
@@ -80,7 +80,7 @@ func (r *linksRepoInFile) BatchInsert(links []string) ([]string, error) {
 }
 
 // GetByCode -.
-func (r *linksRepoInFile) GetByCode(shortURL string) (string, error) {
+func (r *linksRepoInFile) GetLinkByCode(shortURL string) (string, error) {
 
 	scanner := bufio.NewScanner(&r.file)
 	_, cursorResetError := r.file.Seek(0, io.SeekStart)

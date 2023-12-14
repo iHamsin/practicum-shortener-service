@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// LinkRepoRAM -.
+// linkRepoInPGSQL -.
 type linkRepoInPGSQL struct {
 	db *pgx.Conn
 }
@@ -29,14 +29,14 @@ func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
 }
 
 // Insert -.
-func (r *linkRepoInPGSQL) Insert(originalURL string) (string, error) {
+func (r *linkRepoInPGSQL) InsertLink(originalURL string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
 	result, err := r.db.Exec(context.Background(), `insert into links(original_link, short_link) values ($1, $2) ON CONFLICT (original_link) DO NOTHING`, originalURL, shortURL)
 	if err != nil {
 		return "", err
 	}
 	if result.RowsAffected() == 0 {
-		shortURL, err = r.GetByOriginalLink(originalURL)
+		shortURL, err = r.GetLinkByOriginalLink(originalURL)
 		if err != nil {
 			return "", err
 		}
@@ -46,7 +46,7 @@ func (r *linkRepoInPGSQL) Insert(originalURL string) (string, error) {
 }
 
 // BatchInsert -.
-func (r *linkRepoInPGSQL) BatchInsert(links []string) ([]string, error) {
+func (r *linkRepoInPGSQL) BatchInsertLink(links []string) ([]string, error) {
 	result := make([]string, len(links))
 
 	tx, err := r.db.Begin(context.TODO())
@@ -69,7 +69,7 @@ func (r *linkRepoInPGSQL) BatchInsert(links []string) ([]string, error) {
 }
 
 // GetByCode -.
-func (r *linkRepoInPGSQL) GetByCode(shortURL string) (string, error) {
+func (r *linkRepoInPGSQL) GetLinkByCode(shortURL string) (string, error) {
 	// TODO
 	var originalURL string
 	err := r.db.QueryRow(context.Background(), "select original_link from links where short_link=$1", shortURL).Scan(&originalURL)
@@ -81,7 +81,7 @@ func (r *linkRepoInPGSQL) GetByCode(shortURL string) (string, error) {
 }
 
 // GetByCode -.
-func (r *linkRepoInPGSQL) GetByOriginalLink(originalLink string) (string, error) {
+func (r *linkRepoInPGSQL) GetLinkByOriginalLink(originalLink string) (string, error) {
 	// TODO
 	var shortLink string
 	err := r.db.QueryRow(context.Background(), "select short_link from links where original_link=$1", originalLink).Scan(&shortLink)
