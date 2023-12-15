@@ -63,7 +63,7 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 		originalLinks[i] = link.OriginalURL
 		results[i] = responseBatchJSON{CorrelationID: link.CorrelationID, ShortURL: ""}
 	}
-	shortLinks, repoError := h.Repo.BatchInsertLink(originalLinks)
+	shortLinks, repoError := h.Repo.BatchInsertLink(req.Context(), originalLinks)
 	if repoError != nil {
 		http.Error(res, repoError.Error(), http.StatusBadRequest)
 		return

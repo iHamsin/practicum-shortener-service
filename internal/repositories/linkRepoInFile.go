@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -38,7 +39,7 @@ func NewLinksRepoFile(file os.File) (*linksRepoInFile, error) {
 }
 
 // Insert -.
-func (r *linksRepoInFile) InsertLink(originalURL string) (string, error) {
+func (r *linksRepoInFile) InsertLink(ctx context.Context, originalURL string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
 
 	r.lastUUID++
@@ -58,7 +59,7 @@ func (r *linksRepoInFile) InsertLink(originalURL string) (string, error) {
 }
 
 // BatchInsert -.
-func (r *linksRepoInFile) BatchInsertLink(links []string) ([]string, error) {
+func (r *linksRepoInFile) BatchInsertLink(ctx context.Context, links []string) ([]string, error) {
 	result := make([]string, len(links))
 
 	for i, link := range links {
@@ -80,7 +81,7 @@ func (r *linksRepoInFile) BatchInsertLink(links []string) ([]string, error) {
 }
 
 // GetByCode -.
-func (r *linksRepoInFile) GetLinkByCode(shortURL string) (string, error) {
+func (r *linksRepoInFile) GetLinkByCode(ctx context.Context, shortURL string) (string, error) {
 
 	scanner := bufio.NewScanner(&r.file)
 	_, cursorResetError := r.file.Seek(0, io.SeekStart)

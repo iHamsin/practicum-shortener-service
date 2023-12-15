@@ -38,7 +38,7 @@ func (h *GetHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	linkCode := strings.TrimPrefix("http://"+string(req.Host+req.URL.Path), h.Cfg.HTTP.BaseURL+codePrefix)
 	logrus.Debug("New GET request with short code: " + linkCode)
 
-	link, error := h.Repo.GetLinkByCode(linkCode)
+	link, error := h.Repo.GetLinkByCode(req.Context(), linkCode)
 	if error != nil {
 		http.Error(res, error.Error(), http.StatusBadRequest)
 		logrus.Debug(error.Error())

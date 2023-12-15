@@ -18,11 +18,11 @@ var cfg *config.Config
 
 type Repository interface {
 	// GetAll() (map[string]string, error)
-	GetLinkByCode(string) (string, error)
-	InsertLink(string) (string, error)
+	GetLinkByCode(context.Context, string) (string, error)
+	InsertLink(context.Context, string) (string, error)
 	Check() error
 	Close()
-	BatchInsertLink([]string) ([]string, error)
+	BatchInsertLink(context.Context, []string) ([]string, error)
 }
 
 //go:embed migrations/*.sql

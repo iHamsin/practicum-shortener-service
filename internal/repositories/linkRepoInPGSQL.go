@@ -29,14 +29,14 @@ func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
 }
 
 // Insert -.
-func (r *linkRepoInPGSQL) InsertLink(originalURL string) (string, error) {
+func (r *linkRepoInPGSQL) InsertLink(ctx context.Context, originalURL string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
-	result, err := r.db.Exec(context.Background(), `insert into links(original_link, short_link) values ($1, $2) ON CONFLICT (original_link) DO NOTHING`, originalURL, shortURL)
+	result, err := r.db.Exec(ctx, `insert into links(original_link, short_link) values ($1, $2) ON CONFLICT (original_link) DO NOTHING`, originalURL, shortURL)
 	if err != nil {
 		return "", err
 	}
 	if result.RowsAffected() == 0 {
-		shortURL, err = r.GetLinkByOriginalLink(originalURL)
+		shortURL, err = r.GetLinkByOriginalLink(ctx, originalURL)
 		if err != nil {
 			return "", err
 		}
@@ -46,10 +46,10 @@ func (r *linkRepoInPGSQL) InsertLink(originalURL string) (string, error) {
 }
 
 // BatchInsert -.
-func (r *linkRepoInPGSQL) BatchInsertLink(links []string) ([]string, error) {
+func (r *linkRepoInPGSQL) BatchInsertLink(ctx context.Context, links []string) ([]string, error) {
 	result := make([]string, len(links))
 
-	tx, err := r.db.Begin(context.TODO())
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -57,10 +57,10 @@ func (r *linkRepoInPGSQL) BatchInsertLink(links []string) ([]string, error) {
 	for i, link := range links {
 		result[i] = util.RandomString(cfg.ShortCodeLength)
 		// insert
-		_, err = tx.Exec(context.TODO(), `insert into links(original_link, short_link) values ($1, $2)`, link, result[i])
+		_, err = tx.Exec(ctx, `insert into links(original_link, short_link) values ($1, $2)`, link, result[i])
 		if err != nil {
 			// если ошибка, то откатываем изменения
-			_ = tx.Rollback(context.TODO())
+			_ = tx.Rollback(ctx)
 			return nil, err
 		}
 	}
@@ -69,10 +69,10 @@ func (r *linkRepoInPGSQL) BatchInsertLink(links []string) ([]string, error) {
 }
 
 // GetByCode -.
-func (r *linkRepoInPGSQL) GetLinkByCode(shortURL string) (string, error) {
+func (r *linkRepoInPGSQL) GetLinkByCode(ctx context.Context, shortURL string) (string, error) {
 	// TODO
 	var originalURL string
-	err := r.db.QueryRow(context.Background(), "select original_link from links where short_link=$1", shortURL).Scan(&originalURL)
+	err := r.db.QueryRow(ctx, "select original_link from links where short_link=$1", shortURL).Scan(&originalURL)
 	if err != nil {
 		return "", errors.New("link not found")
 	}
@@ -81,10 +81,10 @@ func (r *linkRepoInPGSQL) GetLinkByCode(shortURL string) (string, error) {
 }
 
 // GetByCode -.
-func (r *linkRepoInPGSQL) GetLinkByOriginalLink(originalLink string) (string, error) {
+func (r *linkRepoInPGSQL) GetLinkByOriginalLink(ctx context.Context, originalLink string) (string, error) {
 	// TODO
 	var shortLink string
-	err := r.db.QueryRow(context.Background(), "select short_link from links where original_link=$1", originalLink).Scan(&shortLink)
+	err := r.db.QueryRow(ctx, "select short_link from links where original_link=$1", originalLink).Scan(&shortLink)
 	if err != nil {
 		return "", errors.New("link not found")
 	}
