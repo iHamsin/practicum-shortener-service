@@ -33,28 +33,30 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 	var repository Repository
 	var outError error
 	if cfg.Repository.DatabaseDSN != "" {
-		logrus.Info("DB in postgres", cfg.Repository.DatabaseDSN)
-
-		d, err := iofs.New(fs, "migrations")
-		if err != nil {
-			return nil, err
-		}
-
-		m, err := migrate.NewWithSourceInstance("iofs", d, cfg.Repository.DatabaseDSN)
-		if err != nil {
-			logrus.Error("failed to get a new migrate instance: ", err)
-		}
-		if err := m.Up(); err != nil {
-			if !errors.Is(err, migrate.ErrNoChange) {
-				logrus.Error("failed to apply migrations to the DB: ", err)
-			}
-		}
+		logrus.Info("DB in postgres: ", cfg.Repository.DatabaseDSN)
 
 		db, postgresOpenError := pgx.Connect(context.Background(), cfg.Repository.DatabaseDSN)
 		if postgresOpenError != nil {
 			outError = postgresOpenError
 			repository = nil
 		} else {
+
+			d, err := iofs.New(fs, "migrations")
+			if err != nil {
+				return nil, err
+			}
+
+			m, err := migrate.NewWithSourceInstance("iofs", d, cfg.Repository.DatabaseDSN)
+
+			if err != nil {
+				logrus.Error("failed to get a new migrate instance: ", err)
+			}
+			if err := m.Up(); err != nil {
+				if !errors.Is(err, migrate.ErrNoChange) {
+					logrus.Error("failed to apply migrations to the DB: ", err)
+				}
+			}
+
 			repository = NewLinksRepoPGSQL(db)
 		}
 	} else if cfg.HTTP.DBFile != "" {
