@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,12 +46,19 @@ func TestStatusHandlerGzipJsonBatch(t *testing.T) {
 
 		body, _ := json.Marshal(mcPostBody)
 
-		fmt.Println("----")
-		fmt.Println(string(body))
+		buf := bytes.NewBuffer(nil)
+		zb := gzip.NewWriter(buf)
+		_, err := zb.Write([]byte(body))
+		if err != nil {
+			fmt.Println(err)
+		}
 
-		request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", bytes.NewReader(body))
+		zb.Close()
+
+		request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", buf)
 
 		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Content-Encoding", "gzip")
 		w := httptest.NewRecorder()
 		postHandler.ServeHTTP(w, request)
 		res := w.Result()
