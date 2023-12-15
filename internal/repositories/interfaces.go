@@ -2,8 +2,13 @@ package repositories
 
 import (
 	"context"
+	"embed"
+	"errors"
 	"os"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
@@ -20,6 +25,9 @@ type Repository interface {
 	BatchInsertLink([]string) ([]string, error)
 }
 
+//go:embed migrations/*.sql
+var fs embed.FS
+
 func Init(incomeCfg *config.Config) (Repository, error) {
 	cfg = incomeCfg
 	var repository Repository
@@ -27,27 +35,27 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 	if cfg.Repository.DatabaseDSN != "" {
 		logrus.Info("DB in postgres", cfg.Repository.DatabaseDSN)
 
+		d, err := iofs.New(fs, "migrations")
+		if err != nil {
+			return nil, err
+		}
+
+		m, err := migrate.NewWithSourceInstance("iofs", d, cfg.Repository.DatabaseDSN)
+		if err != nil {
+			logrus.Error("failed to get a new migrate instance: ", err)
+		}
+		if err := m.Up(); err != nil {
+			if !errors.Is(err, migrate.ErrNoChange) {
+				logrus.Error("failed to apply migrations to the DB: ", err)
+			}
+		}
+
 		db, postgresOpenError := pgx.Connect(context.Background(), cfg.Repository.DatabaseDSN)
 		if postgresOpenError != nil {
 			outError = postgresOpenError
 			repository = nil
 		} else {
 			repository = NewLinksRepoPGSQL(db)
-
-			createTableSQL := `
-				CREATE TABLE IF NOT EXISTS  "public"."links" (
-					"original_link" text COLLATE "pg_catalog"."default" NOT NULL,
-					"short_link" text COLLATE "pg_catalog"."default" NOT NULL,
-					UNIQUE(original_link)
-				);
-				`
-			_, dbError := db.Exec(context.Background(), createTableSQL)
-			if dbError != nil {
-				logrus.Error(dbError)
-			} else {
-				logrus.Info("Tables created")
-			}
-
 		}
 	} else if cfg.HTTP.DBFile != "" {
 		logrus.Debug("DB in file", cfg.HTTP.DBFile)
