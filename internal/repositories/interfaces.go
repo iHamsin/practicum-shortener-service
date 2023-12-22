@@ -15,10 +15,10 @@ var cfg *config.Config
 type Repository interface {
 	// GetAll() (map[string]string, error)
 	GetLinkByCode(context.Context, string) (string, error)
-	InsertLink(context.Context, string) (string, error)
+	InsertLink(context.Context, string, string) (string, error)
 	Check() error
 	Close()
-	BatchInsertLink(context.Context, []string) ([]string, error)
+	BatchInsertLink(context.Context, []string, string) ([]string, error)
 }
 
 func Init(incomeCfg *config.Config) (Repository, error) {

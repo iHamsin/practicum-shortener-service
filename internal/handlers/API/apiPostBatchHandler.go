@@ -70,7 +70,9 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 	for i, link := range links {
 		originalLinks[i] = link.OriginalURL
 	}
-	shortLinks, repoError := h.Repo.BatchInsertLink(req.Context(), originalLinks)
+	ctx := req.Context()
+	UUID, _ := ctx.Value("UUID").(string)
+	shortLinks, repoError := h.Repo.BatchInsertLink(req.Context(), originalLinks, UUID)
 	if repoError != nil {
 		http.Error(res, repoError.Error(), http.StatusBadRequest)
 		return

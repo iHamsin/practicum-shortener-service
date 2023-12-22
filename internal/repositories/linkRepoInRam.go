@@ -18,7 +18,7 @@ func NewLinksRepoRAM(storage map[string]string) *linksRepoInRAM {
 }
 
 // Insert -.
-func (r *linksRepoInRAM) InsertLink(ctx context.Context, originalURL string) (string, error) {
+func (r *linksRepoInRAM) InsertLink(ctx context.Context, originalURL string, _ string) (string, error) {
 	// генерируем ключ и проверяем на наличие такого в хранилище
 	var linkKey string
 	var i = 0
@@ -39,7 +39,7 @@ func (r *linksRepoInRAM) InsertLink(ctx context.Context, originalURL string) (st
 }
 
 // BatchInsert -.
-func (r *linksRepoInRAM) BatchInsertLink(ctx context.Context, links []string) ([]string, error) {
+func (r *linksRepoInRAM) BatchInsertLink(ctx context.Context, links []string, _ string) ([]string, error) {
 	result := make([]string, len(links))
 
 	for i, link := range links {

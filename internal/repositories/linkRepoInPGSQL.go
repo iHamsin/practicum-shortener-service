@@ -29,9 +29,9 @@ func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
 }
 
 // Insert -.
-func (r *linkRepoInPGSQL) InsertLink(ctx context.Context, originalURL string) (string, error) {
+func (r *linkRepoInPGSQL) InsertLink(ctx context.Context, originalURL string, UUID string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
-	result, err := r.db.Exec(ctx, `insert into links(original_link, short_link) values ($1, $2) ON CONFLICT (original_link) DO NOTHING`, originalURL, shortURL)
+	result, err := r.db.Exec(ctx, `insert into links(original_link, short_link, uuid) values ($1, $2, $3) ON CONFLICT (original_link) DO NOTHING`, originalURL, shortURL, UUID)
 	if err != nil {
 		return "", err
 	}
@@ -46,7 +46,7 @@ func (r *linkRepoInPGSQL) InsertLink(ctx context.Context, originalURL string) (s
 }
 
 // BatchInsert -.
-func (r *linkRepoInPGSQL) BatchInsertLink(ctx context.Context, links []string) ([]string, error) {
+func (r *linkRepoInPGSQL) BatchInsertLink(ctx context.Context, links []string, UUID string) ([]string, error) {
 	result := make([]string, len(links))
 
 	tx, err := r.db.Begin(ctx)
@@ -57,11 +57,19 @@ func (r *linkRepoInPGSQL) BatchInsertLink(ctx context.Context, links []string) (
 	for i, link := range links {
 		result[i] = util.RandomString(cfg.ShortCodeLength)
 		// insert
-		_, err = tx.Exec(ctx, `insert into links(original_link, short_link) values ($1, $2)`, link, result[i])
+		command, err := tx.Exec(ctx, `insert into links(original_link, short_link, uuid) values ($1, $2, $3) ON CONFLICT (original_link) DO NOTHING`, link, result[i], UUID)
 		if err != nil {
 			// если ошибка, то откатываем изменения
 			_ = tx.Rollback(ctx)
 			return nil, err
+		}
+		if command.RowsAffected() == 0 {
+			shortURL, err := r.GetLinkByOriginalLink(ctx, link)
+			if err != nil {
+				_ = tx.Rollback(ctx)
+				return nil, err
+			}
+			result[i] = shortURL
 		}
 	}
 	_ = tx.Commit(context.TODO())

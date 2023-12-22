@@ -72,8 +72,10 @@ func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// сохраняем линк
+	ctx := req.Context()
+	UUID, _ := ctx.Value("UUID").(string)
 
-	code, error := h.Repo.InsertLink(req.Context(), reqJSON.URL)
+	code, error := h.Repo.InsertLink(req.Context(), reqJSON.URL, UUID)
 
 	if error != nil && !errors.Is(error, repositories.ErrDublicateOriginalLink) {
 		http.Error(res, error.Error(), http.StatusBadRequest)
