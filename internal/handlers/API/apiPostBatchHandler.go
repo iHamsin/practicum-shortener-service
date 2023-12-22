@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/iHamsin/practicum-shortener-service/config"
+	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 	"github.com/sirupsen/logrus"
 )
@@ -71,7 +72,7 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 		originalLinks[i] = link.OriginalURL
 	}
 	ctx := req.Context()
-	UUID, _ := ctx.Value("UUID").(string)
+	UUID, _ := ctx.Value(middlewares.RequestUUIDKey{}).(string)
 	shortLinks, repoError := h.Repo.BatchInsertLink(req.Context(), originalLinks, UUID)
 	if repoError != nil {
 		http.Error(res, repoError.Error(), http.StatusBadRequest)

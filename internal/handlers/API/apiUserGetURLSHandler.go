@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/iHamsin/practicum-shortener-service/config"
+	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 )
 
@@ -18,8 +19,8 @@ type APIUserGetURLSHandler struct {
 func (h *APIUserGetURLSHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
-	UUID, _ := ctx.Value("UUID").(string)
-	isNewUUID, _ := ctx.Value("isNewUUID").(bool)
+	UUID, _ := ctx.Value(middlewares.RequestUUIDKey{}).(string)
+	isNewUUID, _ := ctx.Value(middlewares.RequestisNewUUIDKey{}).(bool)
 
 	links, err := h.Repo.GetLinksByUUID(req.Context(), UUID)
 	if err != nil {

@@ -13,6 +13,11 @@ import (
 
 var key = "1234567890123456"
 
+type requestID string
+
+type RequestUUIDKey struct{}
+type RequestisNewUUIDKey struct{}
+
 func WithCookieCheck(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 
@@ -61,8 +66,8 @@ func WithCookieCheck(next http.Handler) http.Handler {
 			UUID = UUIDCookie.Value
 			isNewUUID = false
 		}
-		ctx1 := context.WithValue(r.Context(), "UUID", UUID)
-		ctx2 := context.WithValue(ctx1, "isNewUUID", isNewUUID)
+		ctx1 := context.WithValue(r.Context(), RequestUUIDKey{}, UUID)
+		ctx2 := context.WithValue(ctx1, RequestisNewUUIDKey{}, isNewUUID)
 		next.ServeHTTP(rw, r.WithContext(ctx2))
 
 	})

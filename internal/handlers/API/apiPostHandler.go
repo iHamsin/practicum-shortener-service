@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/iHamsin/practicum-shortener-service/config"
+	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 	"github.com/sirupsen/logrus"
 )
@@ -73,7 +74,7 @@ func (h *APIPostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	// сохраняем линк
 	ctx := req.Context()
-	UUID, _ := ctx.Value("UUID").(string)
+	UUID, _ := ctx.Value(middlewares.RequestUUIDKey{}).(string)
 
 	code, error := h.Repo.InsertLink(req.Context(), reqJSON.URL, UUID)
 
