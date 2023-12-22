@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/iHamsin/practicum-shortener-service/config"
-	"github.com/iHamsin/practicum-shortener-service/internal/handlers"
+	handlers "github.com/iHamsin/practicum-shortener-service/internal/handlers/API"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 )
 
