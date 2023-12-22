@@ -8,7 +8,6 @@ import (
 
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
-	"github.com/sirupsen/logrus"
 )
 
 type APIUserGetURLSHandler struct {
@@ -20,16 +19,18 @@ func (h *APIUserGetURLSHandler) ServeHTTP(res http.ResponseWriter, req *http.Req
 
 	ctx := req.Context()
 	UUID, _ := ctx.Value("UUID").(string)
+	isNewUUID, _ := ctx.Value("isNewUUID").(bool)
 
 	links, err := h.Repo.GetLinksByUUID(req.Context(), UUID)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
-	logrus.Debug(links)
 
 	res.Header().Set("Content-Type", "application/json")
-	if len(links) == 0 {
+	if isNewUUID {
+		res.WriteHeader(http.StatusUnauthorized)
+	} else if len(links) == 0 {
 		res.WriteHeader(http.StatusNoContent)
 	} else {
 		res.WriteHeader(http.StatusOK)
@@ -44,6 +45,7 @@ func (h *APIUserGetURLSHandler) ServeHTTP(res http.ResponseWriter, req *http.Req
 	for i := range links {
 		links[i].ShortLink = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, links[i].ShortLink)
 	}
+
 	error := json.NewEncoder(res).Encode(links)
 	if error != nil {
 		http.Error(res, error.Error(), http.StatusBadRequest)

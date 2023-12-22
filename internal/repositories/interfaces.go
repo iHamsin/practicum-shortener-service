@@ -23,8 +23,8 @@ type Repository interface {
 }
 
 type Link struct {
-	OriginalLink string `json:"original_link"`
-	ShortLink    string `json:"short_link"`
+	ShortLink    string `json:"short_url"`
+	OriginalLink string `json:"original_url"`
 	UUID         string `json:"-"`
 }
 

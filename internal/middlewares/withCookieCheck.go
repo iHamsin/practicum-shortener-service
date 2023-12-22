@@ -19,6 +19,7 @@ func WithCookieCheck(next http.Handler) http.Handler {
 		UUIDCookie, _ := r.Cookie("UUID")
 		UUIDSignCookie, _ := r.Cookie("UUIDSign")
 		var UUID string
+		var isNewUUID bool
 
 		if UUIDCookie == nil && UUIDSignCookie == nil {
 
@@ -39,6 +40,7 @@ func WithCookieCheck(next http.Handler) http.Handler {
 				Name:  "UUIDSign",
 				Value: hex.EncodeToString(cryptedNewUUID),
 			})
+			isNewUUID = true
 			logrus.Debug("New Cookie ", UUID)
 		} else if UUIDSignCookie == nil {
 			logrus.Debug("No UUID sign ")
@@ -57,9 +59,11 @@ func WithCookieCheck(next http.Handler) http.Handler {
 				http.Error(rw, "Broken UUID sign", http.StatusUnauthorized)
 			}
 			UUID = UUIDCookie.Value
+			isNewUUID = false
 		}
-		ctx := context.WithValue(r.Context(), "UUID", UUID)
-		next.ServeHTTP(rw, r.WithContext(ctx))
+		ctx1 := context.WithValue(r.Context(), "UUID", UUID)
+		ctx2 := context.WithValue(ctx1, "isNewUUID", isNewUUID)
+		next.ServeHTTP(rw, r.WithContext(ctx2))
 
 	})
 }
