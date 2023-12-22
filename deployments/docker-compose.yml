@@ -1,0 +1,35 @@
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: yp
+      POSTGRES_PASSWORD: passw0rd
+    networks:
+        yp-bridge:
+            ipv4_address: 10.10.0.10 
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "8888:80"
+    volumes:
+      - ./pgadmin/servers.json:/home/servers.json
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_SERVER_JSON_FILE: /home/servers.json
+    networks:
+        yp-bridge:
+            ipv4_address: 10.10.0.20 
+networks:
+    yp-bridge:
+        ipam:
+            driver: default
+            config:
+                - subnet: 10.10.0.0/16

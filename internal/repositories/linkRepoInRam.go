@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"errors"
 
 	"github.com/iHamsin/practicum-shortener-service/internal/util"
@@ -17,7 +18,7 @@ func NewLinksRepoRAM(storage map[string]string) *linksRepoInRAM {
 }
 
 // Insert -.
-func (r *linksRepoInRAM) Insert(originalURL string) (string, error) {
+func (r *linksRepoInRAM) InsertLink(ctx context.Context, originalURL string) (string, error) {
 	// генерируем ключ и проверяем на наличие такого в хранилище
 	var linkKey string
 	var i = 0
@@ -37,8 +38,20 @@ func (r *linksRepoInRAM) Insert(originalURL string) (string, error) {
 	return linkKey, nil
 }
 
+// BatchInsert -.
+func (r *linksRepoInRAM) BatchInsertLink(ctx context.Context, links []string) ([]string, error) {
+	result := make([]string, len(links))
+
+	for i, link := range links {
+		result[i] = util.RandomString(cfg.ShortCodeLength)
+		r.storage[result[i]] = link
+	}
+
+	return result, nil
+}
+
 // GetByCode -.
-func (r *linksRepoInRAM) GetByCode(shortURL string) (string, error) {
+func (r *linksRepoInRAM) GetLinkByCode(ctx context.Context, shortURL string) (string, error) {
 	// проверка наличия в хранилище
 	_, URLfound := r.storage[shortURL]
 	if !URLfound {
@@ -50,4 +63,9 @@ func (r *linksRepoInRAM) GetByCode(shortURL string) (string, error) {
 // Close -.
 func (r *linksRepoInRAM) Close() {
 
+}
+
+// Check -.
+func (r *linksRepoInRAM) Check() error {
+	return nil
 }

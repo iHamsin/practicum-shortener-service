@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -38,7 +39,7 @@ func NewLinksRepoFile(file os.File) (*linksRepoInFile, error) {
 }
 
 // Insert -.
-func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
+func (r *linksRepoInFile) InsertLink(ctx context.Context, originalURL string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
 
 	r.lastUUID++
@@ -57,8 +58,30 @@ func (r *linksRepoInFile) Insert(originalURL string) (string, error) {
 	return shortURL, nil
 }
 
+// BatchInsert -.
+func (r *linksRepoInFile) BatchInsertLink(ctx context.Context, links []string) ([]string, error) {
+	result := make([]string, len(links))
+
+	for i, link := range links {
+		result[i] = util.RandomString(cfg.ShortCodeLength)
+		// insert
+		r.lastUUID++
+		var newLine = linkItem{r.lastUUID, result[i], link}
+		jsonLink, jsonEncodeError := json.Marshal(newLine)
+		if jsonEncodeError != nil {
+			return nil, jsonEncodeError
+		}
+		_, fileWriteError := r.file.WriteString(string(jsonLink) + "\n")
+		if fileWriteError != nil {
+			return nil, fileWriteError
+		}
+	}
+
+	return result, nil
+}
+
 // GetByCode -.
-func (r *linksRepoInFile) GetByCode(shortURL string) (string, error) {
+func (r *linksRepoInFile) GetLinkByCode(ctx context.Context, shortURL string) (string, error) {
 
 	scanner := bufio.NewScanner(&r.file)
 	_, cursorResetError := r.file.Seek(0, io.SeekStart)
@@ -83,4 +106,9 @@ func (r *linksRepoInFile) GetByCode(shortURL string) (string, error) {
 // Close -.
 func (r *linksRepoInFile) Close() {
 	r.file.Close()
+}
+
+// Check -.
+func (r *linksRepoInFile) Check() error {
+	return nil
 }
