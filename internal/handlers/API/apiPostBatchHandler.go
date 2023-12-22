@@ -51,17 +51,24 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
+	codePrefix := "/"
+	baseURL, _ := url.ParseRequestURI(h.Cfg.HTTP.BaseURL)
+	if len(baseURL.Path) > 0 {
+		codePrefix = ""
+	}
+
+	// Unmarshal request json
 	var links []requestBatchJSON
 	jsonError := json.Unmarshal(body, &links)
-	results := make([]responseBatchJSON, len(links))
 	if jsonError != nil {
 		http.Error(res, jsonError.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// Insert into repo
 	originalLinks := make([]string, len(links))
 	for i, link := range links {
 		originalLinks[i] = link.OriginalURL
-		results[i] = responseBatchJSON{CorrelationID: link.CorrelationID, ShortURL: ""}
 	}
 	shortLinks, repoError := h.Repo.BatchInsertLink(req.Context(), originalLinks)
 	if repoError != nil {
@@ -69,14 +76,13 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	codePrefix := "/"
-	baseURL, _ := url.ParseRequestURI(h.Cfg.HTTP.BaseURL)
-	if len(baseURL.Path) > 0 {
-		codePrefix = ""
-	}
-
-	for i, shortLink := range shortLinks {
-		results[i].ShortURL = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, shortLink)
+	// Fill responce json
+	results := make([]responseBatchJSON, len(links))
+	for i, link := range links {
+		results[i] = responseBatchJSON{
+			CorrelationID: link.CorrelationID,
+			ShortURL:      fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, shortLinks[i]),
+		}
 	}
 
 	res.Header().Set("Content-Type", "application/json")
