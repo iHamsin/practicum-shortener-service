@@ -112,3 +112,8 @@ func (r *linksRepoInFile) Close() {
 func (r *linksRepoInFile) Check() error {
 	return nil
 }
+
+// GetLinksByUUID -.
+func (r *linksRepoInFile) GetLinksByUUID(ctx context.Context, UUID string) ([]Link, error) {
+	return nil, nil
+}

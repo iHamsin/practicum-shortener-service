@@ -28,7 +28,7 @@ func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
 	return &linkRepoInPGSQL{db}
 }
 
-// Insert -.
+// InsertLink -.
 func (r *linkRepoInPGSQL) InsertLink(ctx context.Context, originalURL string, UUID string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
 	result, err := r.db.Exec(ctx, `insert into links(original_link, short_link, uuid) values ($1, $2, $3) ON CONFLICT (original_link) DO NOTHING`, originalURL, shortURL, UUID)
@@ -45,7 +45,7 @@ func (r *linkRepoInPGSQL) InsertLink(ctx context.Context, originalURL string, UU
 	return shortURL, nil
 }
 
-// BatchInsert -.
+// BatchInsertLink -.
 func (r *linkRepoInPGSQL) BatchInsertLink(ctx context.Context, links []string, UUID string) ([]string, error) {
 	result := make([]string, len(links))
 
@@ -76,9 +76,8 @@ func (r *linkRepoInPGSQL) BatchInsertLink(ctx context.Context, links []string, U
 	return result, nil
 }
 
-// GetByCode -.
+// GetLinkByCode -.
 func (r *linkRepoInPGSQL) GetLinkByCode(ctx context.Context, shortURL string) (string, error) {
-	// TODO
 	var originalURL string
 	err := r.db.QueryRow(ctx, "select original_link from links where short_link=$1", shortURL).Scan(&originalURL)
 	if err != nil {
@@ -88,9 +87,8 @@ func (r *linkRepoInPGSQL) GetLinkByCode(ctx context.Context, shortURL string) (s
 	return originalURL, nil
 }
 
-// GetByCode -.
+// GetLinkByOriginalLink -.
 func (r *linkRepoInPGSQL) GetLinkByOriginalLink(ctx context.Context, originalLink string) (string, error) {
-	// TODO
 	var shortLink string
 	err := r.db.QueryRow(ctx, "select short_link from links where original_link=$1", originalLink).Scan(&shortLink)
 	if err != nil {
@@ -113,4 +111,19 @@ func (r *linkRepoInPGSQL) Check() error {
 	}
 	logrus.Info("Ping from DB ok")
 	return nil
+}
+
+// GetLinksByUUID -.
+func (r *linkRepoInPGSQL) GetLinksByUUID(ctx context.Context, UUID string) ([]Link, error) {
+	var links []Link
+	var link Link
+	rows, _ := r.db.Query(ctx, "select original_link, short_link from links where uuid=$1", UUID)
+	for rows.Next() {
+		err := rows.Scan(&link.OriginalLink, &link.ShortLink)
+		if err != nil {
+			return nil, err
+		}
+		links = append(links, link)
+	}
+	return links, nil
 }

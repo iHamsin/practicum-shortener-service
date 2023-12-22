@@ -19,6 +19,13 @@ type Repository interface {
 	Check() error
 	Close()
 	BatchInsertLink(context.Context, []string, string) ([]string, error)
+	GetLinksByUUID(context.Context, string) ([]Link, error)
+}
+
+type Link struct {
+	OriginalLink string `json:"original_link"`
+	ShortLink    string `json:"short_link"`
+	UUID         string `json:"-"`
 }
 
 func Init(incomeCfg *config.Config) (Repository, error) {

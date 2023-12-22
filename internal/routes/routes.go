@@ -10,9 +10,9 @@ import (
 func Init(repository repositories.Repository, cfg config.Config) chi.Router {
 	var router = chi.NewRouter()
 
-	router.Use(middlewares.WithCompressionResponse)
-	router.Use(middlewares.WithCookieCheck)
 	router.Use(middlewares.WithLoggingMiddleWare)
+	router.Use(middlewares.WithCookieCheck)
+	router.Use(middlewares.WithCompressionResponse)
 
 	RegisterAPIRoutes(router, repository, cfg)
 	RegisterPublicRoutes(router, repository, cfg)

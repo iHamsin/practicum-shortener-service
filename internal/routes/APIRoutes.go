@@ -14,5 +14,5 @@ func RegisterAPIRoutes(router chi.Router, repository repositories.Repository, cf
 
 	router.Post("/api/shorten", apiPostHandler.ServeHTTP)
 	router.Post("/api/shorten/batch", APIPostBatchHandler.ServeHTTP)
-	router.Post("/api/user/urls", APIUserGetURLSHandler.ServeHTTP)
+	router.Get("/api/user/urls", APIUserGetURLSHandler.ServeHTTP)
 }

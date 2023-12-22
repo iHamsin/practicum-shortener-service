@@ -69,3 +69,8 @@ func (r *linksRepoInRAM) Close() {
 func (r *linksRepoInRAM) Check() error {
 	return nil
 }
+
+// GetLinksByUUID -.
+func (r *linksRepoInRAM) GetLinksByUUID(ctx context.Context, UUID string) ([]Link, error) {
+	return nil, nil
+}
