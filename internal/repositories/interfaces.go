@@ -2,14 +2,10 @@ package repositories
 
 import (
 	"context"
-	"embed"
-	"errors"
 	"os"
 
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/iHamsin/practicum-shortener-service/config"
+	"github.com/iHamsin/practicum-shortener-service/internal/migrations"
 	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 )
@@ -25,9 +21,6 @@ type Repository interface {
 	BatchInsertLink(context.Context, []string) ([]string, error)
 }
 
-//go:embed migrations/*.sql
-var fs embed.FS
-
 func Init(incomeCfg *config.Config) (Repository, error) {
 	cfg = incomeCfg
 	var repository Repository
@@ -41,23 +34,13 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 			repository = nil
 		} else {
 
-			d, err := iofs.New(fs, "migrations")
+			err := migrations.MigrationsUP(cfg.Repository.DatabaseDSN)
 			if err != nil {
-				return nil, err
+				outError = err
+				repository = nil
+			} else {
+				repository = NewLinksRepoPGSQL(db)
 			}
-
-			m, err := migrate.NewWithSourceInstance("iofs", d, cfg.Repository.DatabaseDSN)
-
-			if err != nil {
-				logrus.Error("failed to get a new migrate instance: ", err)
-			}
-			if err := m.Up(); err != nil {
-				if !errors.Is(err, migrate.ErrNoChange) {
-					logrus.Error("failed to apply migrations to the DB: ", err)
-				}
-			}
-
-			repository = NewLinksRepoPGSQL(db)
 		}
 	} else if cfg.HTTP.DBFile != "" {
 		logrus.Debug("DB in file", cfg.HTTP.DBFile)
