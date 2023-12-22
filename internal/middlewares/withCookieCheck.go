@@ -13,8 +13,6 @@ import (
 
 var key = "1234567890123456"
 
-type requestID string
-
 type RequestUUIDKey struct{}
 type RequestisNewUUIDKey struct{}
 
