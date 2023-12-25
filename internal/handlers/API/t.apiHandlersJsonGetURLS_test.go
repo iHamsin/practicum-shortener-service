@@ -77,7 +77,7 @@ func TestGetUserURLS(t *testing.T) {
 		assert.Equal(t, 201, res.StatusCode)
 	})
 
-	t.Run("positive get user URLS test", func(t *testing.T) {
+	t.Run("positive get and delete user URLS test", func(t *testing.T) {
 
 		cfg := new(config.Config)
 		cfg.HTTP.Addr = "localhost:8080"
@@ -112,10 +112,42 @@ func TestGetUserURLS(t *testing.T) {
 		defer res.Body.Close()
 		resBody, _ := io.ReadAll(res.Body)
 
-		fmt.Println(string(resBody))
-
 		// проверяем код ответа
 		assert.Equal(t, 200, res.StatusCode)
+
+		var links []responseBatchInsertJSON
+		jsonError := json.Unmarshal(resBody, &links)
+		assert.Equal(t, nil, jsonError)
+
+		var linksToDelete []string
+		for _, link := range links {
+			linksToDelete = append(linksToDelete, strings.ReplaceAll(link.ShortURL, cfg.HTTP.BaseURL, ""))
+		}
+		fmt.Println(linksToDelete)
+
+		body, _ := json.Marshal(linksToDelete)
+		request.Header.Set("Content-Type", "application/json")
+
+		// создаем хэндлер
+		deleteHandler := APIUserDeleteURLSHandler{Repo: repository, Cfg: cfg}
+		deleteRequest := httptest.NewRequest(http.MethodDelete, "/api/user/urls", strings.NewReader(string(body)))
+
+		deleteRequest.Header.Set("Content-Type", "application/json")
+
+		// добавляем куку
+		deleteRequest = deleteRequest.WithContext(context.WithValue(deleteRequest.Context(), middlewares.RequestUUIDKey{}, UUID))
+		deleteRequest = deleteRequest.WithContext(context.WithValue(deleteRequest.Context(), middlewares.RequestisNewUUIDKey{}, cryptedNewUUID))
+
+		w = httptest.NewRecorder()
+		deleteHandler.ServeHTTP(w, deleteRequest)
+		res = w.Result()
+		defer res.Body.Close()
+		resBody, _ = io.ReadAll(res.Body)
+
+		fmt.Println(resBody)
+
+		// проверяем код ответа
+		assert.Equal(t, 202, res.StatusCode)
 	})
 
 }
