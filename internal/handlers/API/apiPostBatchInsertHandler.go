@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +10,7 @@ import (
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
-	"github.com/sirupsen/logrus"
+	"github.com/iHamsin/practicum-shortener-service/internal/util"
 )
 
 type APIPostBatchInsertHandler struct {
@@ -33,17 +32,10 @@ func (h *APIPostBatchInsertHandler) ServeHTTP(res http.ResponseWriter, req *http
 
 	var reader io.Reader
 
-	if req.Header.Get(`Content-Encoding`) == `gzip` {
-		gz, err := gzip.NewReader(req.Body)
-		if err != nil {
-			logrus.Debug("Error with gzip")
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		reader = gz
-		defer gz.Close()
-	} else {
-		reader = req.Body
+	reader, zipError := util.UnzipRequestBody(req)
+	if zipError != nil {
+		http.Error(res, zipError.Error(), http.StatusBadRequest)
+		return
 	}
 
 	body, ioError := io.ReadAll(reader)

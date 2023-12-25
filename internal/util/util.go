@@ -1,10 +1,15 @@
 package util
 
 import (
+	"compress/gzip"
 	cryptoRand "crypto/rand"
 	"encoding/hex"
+	"io"
 	"math/rand"
+	"net/http"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 func RandomString(n int) string {
@@ -35,4 +40,18 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 func GenerateRandomString(s int) (string, error) {
 	b, err := GenerateRandomBytes(s)
 	return hex.EncodeToString(b), err
+}
+
+func UnzipRequestBody(req *http.Request) (io.Reader, error) {
+	if req.Header.Get(`Content-Encoding`) == `gzip` {
+		gz, err := gzip.NewReader(req.Body)
+		if err != nil {
+			logrus.Debug("Error with gzip")
+			return nil, err
+		}
+		defer gz.Close()
+		return gz, nil
+	} else {
+		return req.Body, nil
+	}
 }
