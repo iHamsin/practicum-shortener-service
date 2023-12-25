@@ -34,7 +34,7 @@ func (h *APIPostBatchInsertHandler) ServeHTTP(res http.ResponseWriter, req *http
 
 	reader, zipError := util.UnzipRequestBody(req)
 	if zipError != nil {
-		http.Error(res, zipError.Error(), http.StatusBadRequest)
+		http.Error(res, zipError.Error(), http.StatusInternalServerError)
 		return
 	}
 

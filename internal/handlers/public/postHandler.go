@@ -23,7 +23,7 @@ func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	reader, zipError := util.UnzipRequestBody(req)
 	if zipError != nil {
-		http.Error(res, zipError.Error(), http.StatusBadRequest)
+		http.Error(res, zipError.Error(), http.StatusInternalServerError)
 		return
 	}
 
