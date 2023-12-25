@@ -14,22 +14,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type APIPostBatchHandler struct {
+type APIPostBatchInsertHandler struct {
 	Repo repositories.Repository
 	Cfg  *config.Config
 }
 
-type requestBatchJSON struct {
+type requestBatchInsertJSON struct {
 	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url"`
 }
 
-type responseBatchJSON struct {
+type responseBatchInsertJSON struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
-func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (h *APIPostBatchInsertHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	var reader io.Reader
 
@@ -59,7 +59,7 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 	}
 
 	// Unmarshal request json
-	var links []requestBatchJSON
+	var links []requestBatchInsertJSON
 	jsonError := json.Unmarshal(body, &links)
 	if jsonError != nil {
 		http.Error(res, jsonError.Error(), http.StatusBadRequest)
@@ -80,9 +80,9 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 	}
 
 	// Fill responce json
-	results := make([]responseBatchJSON, len(links))
+	results := make([]responseBatchInsertJSON, len(links))
 	for i, link := range links {
-		results[i] = responseBatchJSON{
+		results[i] = responseBatchInsertJSON{
 			CorrelationID: link.CorrelationID,
 			ShortURL:      fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, shortLinks[i]),
 		}

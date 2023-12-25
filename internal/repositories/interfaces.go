@@ -13,19 +13,20 @@ import (
 var cfg *config.Config
 
 type Repository interface {
-	// GetAll() (map[string]string, error)
 	GetLinkByCode(context.Context, string) (string, error)
 	InsertLink(context.Context, string, string) (string, error)
 	Check() error
 	Close()
 	BatchInsertLink(context.Context, []string, string) ([]string, error)
+	BatchDeleteLink(context.Context, []string, string) (bool, error)
 	GetLinksByUUID(context.Context, string) ([]Link, error)
 }
 
 type Link struct {
-	ShortLink    string `json:"short_url"`
-	OriginalLink string `json:"original_url"`
-	UUID         string `json:"-"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+	UUID        string `json:"-"`
+	DeletedFlag bool   `json:"-"`
 }
 
 func Init(incomeCfg *config.Config) (Repository, error) {

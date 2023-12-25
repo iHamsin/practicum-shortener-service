@@ -43,6 +43,7 @@ func main() {
 	if serverError != nil {
 		logrus.Error(serverError)
 	}
+
 	logrus.Debug("WebServer started")
 	fmt.Println("WebServer started at " + cfg.HTTP.Addr)
 	fmt.Println("Short link BaseURL: " + cfg.HTTP.BaseURL)

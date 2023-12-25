@@ -44,7 +44,7 @@ func (h *APIUserGetURLSHandler) ServeHTTP(res http.ResponseWriter, req *http.Req
 	}
 
 	for i := range links {
-		links[i].ShortLink = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, links[i].ShortLink)
+		links[i].ShortURL = fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, links[i].ShortURL)
 	}
 
 	error := json.NewEncoder(res).Encode(links)

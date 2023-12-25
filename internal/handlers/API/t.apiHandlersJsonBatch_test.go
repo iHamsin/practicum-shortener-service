@@ -28,9 +28,9 @@ func TestStatusHandlerGzipJsonBatch(t *testing.T) {
 
 		var repository, _ = repositories.Init(cfg)
 
-		postHandler := APIPostBatchHandler{Repo: repository, Cfg: cfg}
+		postHandler := APIPostBatchInsertHandler{Repo: repository, Cfg: cfg}
 
-		mcPostBody := []requestBatchJSON{{
+		mcPostBody := []requestBatchInsertJSON{{
 			CorrelationID: "1",
 			OriginalURL:   "https://practicum1.yandex.ru",
 		}, {
@@ -77,9 +77,9 @@ func TestStatusHandlerGzipJsonBatch(t *testing.T) {
 
 		var repository, _ = repositories.Init(cfg)
 
-		postHandler := APIPostBatchHandler{Repo: repository, Cfg: cfg}
+		postHandler := APIPostBatchInsertHandler{Repo: repository, Cfg: cfg}
 
-		mcPostBody := []requestBatchJSON{{
+		mcPostBody := []requestBatchInsertJSON{{
 			CorrelationID: "1",
 			OriginalURL:   "brokenLink",
 		}}
@@ -108,7 +108,7 @@ func TestStatusHandlerGzipJsonBatch(t *testing.T) {
 
 		var repository, _ = repositories.Init(cfg)
 
-		postHandler := APIPostBatchHandler{Repo: repository, Cfg: cfg}
+		postHandler := APIPostBatchInsertHandler{Repo: repository, Cfg: cfg}
 
 		request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader("brokenJson"))
 		request.Header.Set("Content-Type", "application/json")

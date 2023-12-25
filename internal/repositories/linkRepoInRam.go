@@ -50,6 +50,11 @@ func (r *linksRepoInRAM) BatchInsertLink(ctx context.Context, links []string, _ 
 	return result, nil
 }
 
+// BatchInsert -.
+func (r *linksRepoInRAM) BatchDeleteLink(ctx context.Context, links []string, _ string) (bool, error) {
+	return true, nil
+}
+
 // GetByCode -.
 func (r *linksRepoInRAM) GetLinkByCode(ctx context.Context, shortURL string) (string, error) {
 	// проверка наличия в хранилище

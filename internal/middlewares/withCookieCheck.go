@@ -27,9 +27,6 @@ func WithCookieCheck(next http.Handler) http.Handler {
 		if UUIDCookie == nil && UUIDSignCookie == nil {
 
 			UUID, _ = util.GenerateRandomString(10)
-
-			logrus.Debug("New UUID: ", UUID)
-
 			h := hmac.New(sha256.New, []byte(key))
 			h.Write([]byte(UUID))
 			cryptedNewUUID := h.Sum(nil)
@@ -46,27 +43,22 @@ func WithCookieCheck(next http.Handler) http.Handler {
 			isNewUUID = true
 			logrus.Debug("New Cookie ", UUID)
 		} else if UUIDSignCookie == nil {
-			logrus.Debug("No UUID sign ")
 			http.Error(rw, "No UUID sign", http.StatusUnauthorized)
 			return
 		} else {
-
 			logrus.Debug("Check Cookie ", UUIDCookie.Value)
-
 			h := hmac.New(sha256.New, []byte(key))
 			h.Write([]byte(UUIDCookie.Value))
 			referenceSign := h.Sum(nil)
 			userSign, _ := hex.DecodeString(UUIDSignCookie.Value)
 			if string(referenceSign) != string(userSign) {
-				logrus.Debug("Broken UUID sign")
 				http.Error(rw, "Broken UUID sign", http.StatusUnauthorized)
 			}
 			UUID = UUIDCookie.Value
 			isNewUUID = false
 		}
-		ctx1 := context.WithValue(r.Context(), RequestUUIDKey{}, UUID)
-		ctx2 := context.WithValue(ctx1, RequestisNewUUIDKey{}, isNewUUID)
-		next.ServeHTTP(rw, r.WithContext(ctx2))
-
+		ctx := context.WithValue(r.Context(), RequestUUIDKey{}, UUID)
+		ctx = context.WithValue(ctx, RequestisNewUUIDKey{}, isNewUUID)
+		next.ServeHTTP(rw, r.WithContext(ctx))
 	})
 }

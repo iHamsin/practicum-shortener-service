@@ -7,7 +7,6 @@ import (
 
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
-	"github.com/sirupsen/logrus"
 )
 
 type GetHandler struct {
@@ -36,12 +35,16 @@ func (h *GetHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	linkCode := strings.TrimPrefix("http://"+string(req.Host+req.URL.Path), h.Cfg.HTTP.BaseURL+codePrefix)
-	logrus.Debug("New GET request with short code: " + linkCode)
+	// logrus.Debug("New GET request with short code: " + linkCode)
 
 	link, error := h.Repo.GetLinkByCode(req.Context(), linkCode)
 	if error != nil {
-		http.Error(res, error.Error(), http.StatusBadRequest)
-		logrus.Debug(error.Error())
+		if error.Error() == "link gone" {
+			http.Error(res, error.Error(), http.StatusGone)
+		} else {
+			http.Error(res, error.Error(), http.StatusBadRequest)
+		}
+		// logrus.Debug(error.Error())
 	} else {
 		res.Header().Set("Location", link)
 		res.WriteHeader(http.StatusTemporaryRedirect)

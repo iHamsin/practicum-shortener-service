@@ -11,21 +11,27 @@ import (
 
 // linkRepoInPGSQL -.
 type linkRepoInPGSQL struct {
-	db *pgx.Conn
+	db                   *pgx.Conn
+	linksToDeleteChannle chan []string
 }
 
 var ErrDublicateOriginalLink = errors.New("dublicate orgiginal link")
 
-// Link -.
-// type linkInSQLItem struct {
-// 	UUID        int    `json:"uuid"`
-// 	ShortURL    string `json:"short_url"`
-// 	OriginalURL string `json:"original_url"`
-// }
-
 // New -.
 func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
-	return &linkRepoInPGSQL{db}
+	newPGSQLRepo := &linkRepoInPGSQL{db, make(chan []string)}
+	go func(db *pgx.Conn) {
+		for {
+			linksToDelete := <-newPGSQLRepo.linksToDeleteChannle
+			batch := &pgx.Batch{}
+			for _, link := range linksToDelete {
+				batch.Queue("UPDATE links SET deleted_flag = TRUE WHERE short_link = $1", link)
+			}
+			batchResult := db.SendBatch(context.Background(), batch)
+			batchResult.Close()
+		}
+	}(newPGSQLRepo.db)
+	return newPGSQLRepo
 }
 
 // InsertLink -.
@@ -76,12 +82,23 @@ func (r *linkRepoInPGSQL) BatchInsertLink(ctx context.Context, links []string, U
 	return result, nil
 }
 
+// BatchDeleteLink -.
+func (r *linkRepoInPGSQL) BatchDeleteLink(ctx context.Context, links []string, UUID string) (bool, error) {
+	r.linksToDeleteChannle <- links
+	return true, nil
+}
+
 // GetLinkByCode -.
 func (r *linkRepoInPGSQL) GetLinkByCode(ctx context.Context, shortURL string) (string, error) {
 	var originalURL string
-	err := r.db.QueryRow(ctx, "select original_link from links where short_link=$1", shortURL).Scan(&originalURL)
+	var deletedFlag bool
+	err := r.db.QueryRow(ctx, "select original_link, deleted_flag from links where short_link=$1", shortURL).Scan(&originalURL, &deletedFlag)
 	if err != nil {
+		logrus.Error(err)
 		return "", errors.New("link not found")
+	}
+	if deletedFlag {
+		return "", errors.New("link gone")
 	}
 
 	return originalURL, nil
@@ -119,7 +136,7 @@ func (r *linkRepoInPGSQL) GetLinksByUUID(ctx context.Context, UUID string) ([]Li
 	var link Link
 	rows, _ := r.db.Query(ctx, "select original_link, short_link from links where uuid=$1", UUID)
 	for rows.Next() {
-		err := rows.Scan(&link.OriginalLink, &link.ShortLink)
+		err := rows.Scan(&link.OriginalURL, &link.ShortURL)
 		if err != nil {
 			return nil, err
 		}

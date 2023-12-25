@@ -80,6 +80,11 @@ func (r *linksRepoInFile) BatchInsertLink(ctx context.Context, links []string, _
 	return result, nil
 }
 
+// BatchInsert -.
+func (r *linksRepoInFile) BatchDeleteLink(ctx context.Context, links []string, _ string) (bool, error) {
+	return true, nil
+}
+
 // GetByCode -.
 func (r *linksRepoInFile) GetLinkByCode(ctx context.Context, shortURL string) (string, error) {
 
