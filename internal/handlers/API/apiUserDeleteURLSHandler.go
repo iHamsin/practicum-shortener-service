@@ -22,8 +22,6 @@ func (h *APIUserDeleteURLSHandler) ServeHTTP(res http.ResponseWriter, req *http.
 	ctx := req.Context()
 	UUID, _ := ctx.Value(middlewares.RequestUUIDKey{}).(string)
 
-	var reader io.Reader
-
 	reader, zipError := util.UnzipRequestBody(req)
 	if zipError != nil {
 		http.Error(res, zipError.Error(), http.StatusInternalServerError)

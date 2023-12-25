@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -118,6 +119,10 @@ func TestGetUserURLS(t *testing.T) {
 		// проверяем код ответа
 		assert.Equal(t, 200, res.StatusCode)
 
+		//
+		// массовое удаление
+		//
+
 		var links []responseBatchInsertJSON
 		jsonError := json.Unmarshal(resBody, &links)
 		assert.Equal(t, nil, jsonError)
@@ -129,17 +134,13 @@ func TestGetUserURLS(t *testing.T) {
 		fmt.Println(linksToDelete)
 
 		body, _ := json.Marshal(linksToDelete)
-		request.Header.Set("Content-Type", "application/json")
 
 		// создаем хэндлер
 		deleteHandler := APIUserDeleteURLSHandler{Repo: repository, Cfg: cfg}
-		deleteRequest := httptest.NewRequest(http.MethodDelete, "/api/user/urls", strings.NewReader(string(body)))
 
+		deleteRequest := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewReader(body))
 		deleteRequest.Header.Set("Content-Type", "application/json")
-
-		// добавляем куку
-		deleteRequest = deleteRequest.WithContext(context.WithValue(deleteRequest.Context(), middlewares.RequestUUIDKey{}, UUID))
-		deleteRequest = deleteRequest.WithContext(context.WithValue(deleteRequest.Context(), middlewares.RequestisNewUUIDKey{}, cryptedNewUUID))
+		deleteRequest.Header.Set("Cookie", "UUID="+UUID+"; UUIDSign="+string(cryptedNewUUID))
 
 		w = httptest.NewRecorder()
 		deleteHandler.ServeHTTP(w, deleteRequest)
@@ -152,11 +153,18 @@ func TestGetUserURLS(t *testing.T) {
 		// проверяем код ответа
 		assert.Equal(t, 202, res.StatusCode)
 
+		//
+		// получение удаленного линка
+		//
+
 		getHandler := handlers.GetHandler{Repo: repository, Cfg: cfg}
-		request = httptest.NewRequest(http.MethodGet, string(links[0].ShortURL), nil)
+		checkDeleteRequest := httptest.NewRequest(http.MethodGet, string(links[0].ShortURL), nil)
+		checkDeleteRequest.Header.Set("Cookie", "UUID="+UUID+"; UUIDSign="+string(cryptedNewUUID))
 		w = httptest.NewRecorder()
-		getHandler.ServeHTTP(w, request)
+		getHandler.ServeHTTP(w, checkDeleteRequest)
 		res = w.Result()
+		resBody, _ = io.ReadAll(res.Body)
+		fmt.Println(resBody)
 		defer res.Body.Close()
 		// проверяем возврат линка по сохраненному коду
 		assert.Equal(t, res.StatusCode, 410)
