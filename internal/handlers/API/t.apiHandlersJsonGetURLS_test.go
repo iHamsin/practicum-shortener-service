@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -153,6 +154,9 @@ func TestGetUserURLS(t *testing.T) {
 		// проверяем код ответа
 		assert.Equal(t, 202, res.StatusCode)
 
+		// нужна пауза, иначе горутина не успевает удалить и следующий тест валится
+		time.Sleep(3 * time.Second)
+
 		//
 		// получение удаленного линка
 		//
@@ -167,7 +171,7 @@ func TestGetUserURLS(t *testing.T) {
 		fmt.Println(resBody)
 		defer res.Body.Close()
 		// проверяем возврат линка по сохраненному коду
-		assert.Equal(t, res.StatusCode, 410)
+		assert.Equal(t, 410, res.StatusCode)
 	})
 
 	t.Run("negative delete user URLS test", func(t *testing.T) {
