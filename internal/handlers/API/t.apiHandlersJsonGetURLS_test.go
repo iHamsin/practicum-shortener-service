@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/iHamsin/practicum-shortener-service/config"
+	handlers "github.com/iHamsin/practicum-shortener-service/internal/handlers/public"
 	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 )
@@ -150,6 +151,15 @@ func TestGetUserURLS(t *testing.T) {
 
 		// проверяем код ответа
 		assert.Equal(t, 202, res.StatusCode)
+
+		getHandler := handlers.GetHandler{Repo: repository, Cfg: cfg}
+		request = httptest.NewRequest(http.MethodGet, string(links[0].ShortURL), nil)
+		w = httptest.NewRecorder()
+		getHandler.ServeHTTP(w, request)
+		res = w.Result()
+		defer res.Body.Close()
+		// проверяем возврат линка по сохраненному коду
+		assert.Equal(t, res.StatusCode, 410)
 	})
 
 }
