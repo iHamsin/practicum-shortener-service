@@ -6,7 +6,7 @@ import (
 
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/migrations"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,12 +36,14 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 	if cfg.Repository.DatabaseDSN != "" {
 		logrus.Info("DB in postgres: ", cfg.Repository.DatabaseDSN)
 
-		db, postgresOpenError := pgx.Connect(context.Background(), cfg.Repository.DatabaseDSN)
+		// db, postgresOpenError := pgx.Connect(context.Background(), cfg.Repository.DatabaseDSN)
+
+		db, postgresOpenError := pgxpool.New(context.Background(), cfg.Repository.DatabaseDSN)
 		if postgresOpenError != nil {
+			logrus.Info("Unable to create connection pool: ", postgresOpenError)
 			outError = postgresOpenError
 			repository = nil
 		} else {
-
 			err := migrations.MigrationsUP(cfg.Repository.DatabaseDSN)
 			if err != nil {
 				outError = err

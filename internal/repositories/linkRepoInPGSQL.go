@@ -6,21 +6,22 @@ import (
 
 	"github.com/iHamsin/practicum-shortener-service/internal/util"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
 
 // linkRepoInPGSQL -.
 type linkRepoInPGSQL struct {
-	db                   *pgx.Conn
+	db                   *pgxpool.Pool
 	linksToDeleteChannle chan []string
 }
 
 var ErrDublicateOriginalLink = errors.New("dublicate orgiginal link")
 
 // New -.
-func NewLinksRepoPGSQL(db *pgx.Conn) *linkRepoInPGSQL {
+func NewLinksRepoPGSQL(db *pgxpool.Pool) *linkRepoInPGSQL {
 	newPGSQLRepo := &linkRepoInPGSQL{db, make(chan []string)}
-	go func(db *pgx.Conn) {
+	go func(db *pgxpool.Pool) {
 		for {
 			linksToDelete := <-newPGSQLRepo.linksToDeleteChannle
 			batch := &pgx.Batch{}
@@ -117,7 +118,7 @@ func (r *linkRepoInPGSQL) GetLinkByOriginalLink(ctx context.Context, originalLin
 
 // Close -.
 func (r *linkRepoInPGSQL) Close() {
-	r.db.Close(context.Background())
+	r.db.Close()
 }
 
 // Check -.
