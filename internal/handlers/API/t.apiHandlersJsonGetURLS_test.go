@@ -34,6 +34,7 @@ func TestGetUserURLS(t *testing.T) {
 		var repository, repoError = repositories.Init(cfg)
 		if repoError != nil {
 			logrus.Error(repoError)
+			return
 		} else {
 			defer repository.Close()
 		}
@@ -89,6 +90,7 @@ func TestGetUserURLS(t *testing.T) {
 		var repository, repoError = repositories.Init(cfg)
 		if repoError != nil {
 			logrus.Error(repoError)
+			return
 		} else {
 			defer repository.Close()
 		}
