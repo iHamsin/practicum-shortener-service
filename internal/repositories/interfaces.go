@@ -38,7 +38,9 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 
 		// db, postgresOpenError := pgx.Connect(context.Background(), cfg.Repository.DatabaseDSN)
 
-		db, postgresOpenError := pgxpool.New(context.Background(), cfg.Repository.DatabaseDSN)
+		db, _ := pgxpool.New(context.Background(), cfg.Repository.DatabaseDSN)
+		postgresOpenError := db.Ping(context.Background())
+
 		if postgresOpenError != nil {
 			logrus.Info("Unable to create connection pool: ", postgresOpenError)
 			outError = postgresOpenError
