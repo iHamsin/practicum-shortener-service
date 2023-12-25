@@ -170,4 +170,44 @@ func TestGetUserURLS(t *testing.T) {
 		assert.Equal(t, res.StatusCode, 410)
 	})
 
+	t.Run("negative delete user URLS test", func(t *testing.T) {
+
+		cfg := new(config.Config)
+		cfg.HTTP.Addr = "localhost:8080"
+		cfg.HTTP.BaseURL = "http://localhost:8080/addon/"
+
+		cfg.Repository.ShortCodeLength = 8
+		cfg.Repository.DatabaseDSN = "postgres://yp:passw0rd@127.0.0.1:5432/postgres?sslmode=disable"
+
+		var repository, repoError = repositories.Init(cfg)
+		if repoError != nil {
+			logrus.Error(repoError)
+			return
+		} else {
+			defer repository.Close()
+		}
+
+		//
+		// массовое удаление
+		//
+
+		// создаем хэндлер
+		deleteHandler := APIUserDeleteURLSHandler{Repo: repository, Cfg: cfg}
+
+		deleteRequest := httptest.NewRequest(http.MethodDelete, "/api/user/urls", bytes.NewReader([]byte("{}")))
+		deleteRequest.Header.Set("Content-Type", "application/json")
+		deleteRequest.Header.Set("Content-Encoding", "gzip")
+
+		w := httptest.NewRecorder()
+		deleteHandler.ServeHTTP(w, deleteRequest)
+		res := w.Result()
+		defer res.Body.Close()
+		resBody, _ := io.ReadAll(res.Body)
+
+		fmt.Println(resBody)
+
+		// проверяем код ответа
+		assert.Equal(t, 500, res.StatusCode)
+	})
+
 }
