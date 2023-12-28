@@ -11,6 +11,7 @@ import (
 	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 	"github.com/iHamsin/practicum-shortener-service/internal/util"
+	"github.com/sirupsen/logrus"
 )
 
 type PostHandler struct {
@@ -55,7 +56,7 @@ func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	code, error := h.Repo.InsertLink(req.Context(), string(body), UUID)
 	if error != nil && !errors.Is(error, repositories.ErrDublicateOriginalLink) {
 		http.Error(res, error.Error(), http.StatusBadRequest)
-		fmt.Println(error)
+		logrus.Error(error)
 		return
 	} else {
 		if errors.Is(error, repositories.ErrDublicateOriginalLink) {
