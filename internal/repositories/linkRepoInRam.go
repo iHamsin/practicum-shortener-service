@@ -18,7 +18,7 @@ func NewLinksRepoRAM(storage map[string]string) *linksRepoInRAM {
 }
 
 // Insert -.
-func (r *linksRepoInRAM) InsertLink(ctx context.Context, originalURL string) (string, error) {
+func (r *linksRepoInRAM) InsertLink(ctx context.Context, originalURL string, _ string) (string, error) {
 	// генерируем ключ и проверяем на наличие такого в хранилище
 	var linkKey string
 	var i = 0
@@ -39,7 +39,7 @@ func (r *linksRepoInRAM) InsertLink(ctx context.Context, originalURL string) (st
 }
 
 // BatchInsert -.
-func (r *linksRepoInRAM) BatchInsertLink(ctx context.Context, links []string) ([]string, error) {
+func (r *linksRepoInRAM) BatchInsertLink(ctx context.Context, links []string, _ string) ([]string, error) {
 	result := make([]string, len(links))
 
 	for i, link := range links {
@@ -48,6 +48,11 @@ func (r *linksRepoInRAM) BatchInsertLink(ctx context.Context, links []string) ([
 	}
 
 	return result, nil
+}
+
+// BatchInsert -.
+func (r *linksRepoInRAM) BatchDeleteLink(ctx context.Context, links []string, _ string) (bool, error) {
+	return true, nil
 }
 
 // GetByCode -.
@@ -68,4 +73,9 @@ func (r *linksRepoInRAM) Close() {
 // Check -.
 func (r *linksRepoInRAM) Check() error {
 	return nil
+}
+
+// GetLinksByUUID -.
+func (r *linksRepoInRAM) GetLinksByUUID(ctx context.Context, UUID string) ([]Link, error) {
+	return nil, nil
 }

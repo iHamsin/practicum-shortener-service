@@ -5,8 +5,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 type gzipWriter struct {
@@ -28,7 +26,7 @@ func WithCompressionResponse(next http.Handler) http.Handler {
 			return
 		}
 
-		logrus.Debug("Will zip response")
+		// logrus.Debug("Will zip response")
 
 		gz, gzipError := gzip.NewWriterLevel(rw, gzip.BestCompression)
 		if gzipError != nil {

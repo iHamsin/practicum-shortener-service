@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
@@ -9,7 +8,9 @@ import (
 	"net/url"
 
 	"github.com/iHamsin/practicum-shortener-service/config"
+	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
+	"github.com/iHamsin/practicum-shortener-service/internal/util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,17 +22,10 @@ type PostHandler struct {
 func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	var reader io.Reader
 
-	if req.Header.Get(`Content-Encoding`) == `gzip` {
-		gz, err := gzip.NewReader(req.Body)
-		if err != nil {
-			logrus.Debug("Error with gzip")
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		reader = gz
-		defer gz.Close()
-	} else {
-		reader = req.Body
+	reader, zipError := util.UnzipRequestBody(req)
+	if zipError != nil {
+		http.Error(res, zipError.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	body, ioError := io.ReadAll(reader)
@@ -55,9 +49,14 @@ func (h *PostHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// сохраняем линк
-	code, error := h.Repo.InsertLink(req.Context(), string(body))
+	ctx := req.Context()
+	UUID, _ := ctx.Value(middlewares.RequestUUIDKey{}).(string)
+
+	// сохраняем линк
+	code, error := h.Repo.InsertLink(req.Context(), string(body), UUID)
 	if error != nil && !errors.Is(error, repositories.ErrDublicateOriginalLink) {
 		http.Error(res, error.Error(), http.StatusBadRequest)
+		logrus.Error(error)
 		return
 	} else {
 		if errors.Is(error, repositories.ErrDublicateOriginalLink) {

@@ -90,5 +90,5 @@ go build -o ./tests/ ./cmd/shortener &&
 
 ```
 go build -o ./tests/ ./cmd/shortener &&
-./tests/shortenertest -test.v -test.run=^TestIteration11$ -binary-path=./tests/shortener -source-path=./ -file-storage-path=./tests/main.db -server-port=8080 -database-dsn="postgres://yp:passw0rd@127.0.0.1:5432/postgres?sslmode=disable"
+./tests/shortenertest -test.v -test.run=^TestIteration15$ -binary-path=./tests/shortener -source-path=./ -file-storage-path=./tests/main.db -server-port=8080 -database-dsn="postgres://yp:passw0rd@127.0.0.1:5432/postgres?sslmode=disable"
 ```

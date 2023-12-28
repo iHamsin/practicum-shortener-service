@@ -39,7 +39,7 @@ func NewLinksRepoFile(file os.File) (*linksRepoInFile, error) {
 }
 
 // Insert -.
-func (r *linksRepoInFile) InsertLink(ctx context.Context, originalURL string) (string, error) {
+func (r *linksRepoInFile) InsertLink(ctx context.Context, originalURL string, _ string) (string, error) {
 	shortURL := util.RandomString(cfg.ShortCodeLength)
 
 	r.lastUUID++
@@ -59,7 +59,7 @@ func (r *linksRepoInFile) InsertLink(ctx context.Context, originalURL string) (s
 }
 
 // BatchInsert -.
-func (r *linksRepoInFile) BatchInsertLink(ctx context.Context, links []string) ([]string, error) {
+func (r *linksRepoInFile) BatchInsertLink(ctx context.Context, links []string, _ string) ([]string, error) {
 	result := make([]string, len(links))
 
 	for i, link := range links {
@@ -78,6 +78,11 @@ func (r *linksRepoInFile) BatchInsertLink(ctx context.Context, links []string) (
 	}
 
 	return result, nil
+}
+
+// BatchInsert -.
+func (r *linksRepoInFile) BatchDeleteLink(ctx context.Context, links []string, _ string) (bool, error) {
+	return true, nil
 }
 
 // GetByCode -.
@@ -111,4 +116,9 @@ func (r *linksRepoInFile) Close() {
 // Check -.
 func (r *linksRepoInFile) Check() error {
 	return nil
+}
+
+// GetLinksByUUID -.
+func (r *linksRepoInFile) GetLinksByUUID(ctx context.Context, UUID string) ([]Link, error) {
+	return nil, nil
 }

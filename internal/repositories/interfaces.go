@@ -6,19 +6,27 @@ import (
 
 	"github.com/iHamsin/practicum-shortener-service/config"
 	"github.com/iHamsin/practicum-shortener-service/internal/migrations"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
 
 var cfg *config.Config
 
 type Repository interface {
-	// GetAll() (map[string]string, error)
 	GetLinkByCode(context.Context, string) (string, error)
-	InsertLink(context.Context, string) (string, error)
+	InsertLink(context.Context, string, string) (string, error)
 	Check() error
 	Close()
-	BatchInsertLink(context.Context, []string) ([]string, error)
+	BatchInsertLink(context.Context, []string, string) ([]string, error)
+	BatchDeleteLink(context.Context, []string, string) (bool, error)
+	GetLinksByUUID(context.Context, string) ([]Link, error)
+}
+
+type Link struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+	UUID        string `json:"-"`
+	DeletedFlag bool   `json:"-"`
 }
 
 func Init(incomeCfg *config.Config) (Repository, error) {
@@ -28,12 +36,16 @@ func Init(incomeCfg *config.Config) (Repository, error) {
 	if cfg.Repository.DatabaseDSN != "" {
 		logrus.Info("DB in postgres: ", cfg.Repository.DatabaseDSN)
 
-		db, postgresOpenError := pgx.Connect(context.Background(), cfg.Repository.DatabaseDSN)
+		// db, postgresOpenError := pgx.Connect(context.Background(), cfg.Repository.DatabaseDSN)
+
+		db, _ := pgxpool.New(context.Background(), cfg.Repository.DatabaseDSN)
+		postgresOpenError := db.Ping(context.Background())
+
 		if postgresOpenError != nil {
+			logrus.Info("Unable to create connection pool: ", postgresOpenError)
 			outError = postgresOpenError
 			repository = nil
 		} else {
-
 			err := migrations.MigrationsUP(cfg.Repository.DatabaseDSN)
 			if err != nil {
 				outError = err

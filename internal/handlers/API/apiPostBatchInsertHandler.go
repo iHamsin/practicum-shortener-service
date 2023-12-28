@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,40 +8,34 @@ import (
 	"net/url"
 
 	"github.com/iHamsin/practicum-shortener-service/config"
+	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
-	"github.com/sirupsen/logrus"
+	"github.com/iHamsin/practicum-shortener-service/internal/util"
 )
 
-type APIPostBatchHandler struct {
+type APIPostBatchInsertHandler struct {
 	Repo repositories.Repository
 	Cfg  *config.Config
 }
 
-type requestBatchJSON struct {
+type requestBatchInsertJSON struct {
 	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url"`
 }
 
-type responseBatchJSON struct {
+type responseBatchInsertJSON struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
-func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (h *APIPostBatchInsertHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	var reader io.Reader
 
-	if req.Header.Get(`Content-Encoding`) == `gzip` {
-		gz, err := gzip.NewReader(req.Body)
-		if err != nil {
-			logrus.Debug("Error with gzip")
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		reader = gz
-		defer gz.Close()
-	} else {
-		reader = req.Body
+	reader, zipError := util.UnzipRequestBody(req)
+	if zipError != nil {
+		http.Error(res, zipError.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	body, ioError := io.ReadAll(reader)
@@ -58,7 +51,7 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 	}
 
 	// Unmarshal request json
-	var links []requestBatchJSON
+	var links []requestBatchInsertJSON
 	jsonError := json.Unmarshal(body, &links)
 	if jsonError != nil {
 		http.Error(res, jsonError.Error(), http.StatusBadRequest)
@@ -70,16 +63,18 @@ func (h *APIPostBatchHandler) ServeHTTP(res http.ResponseWriter, req *http.Reque
 	for i, link := range links {
 		originalLinks[i] = link.OriginalURL
 	}
-	shortLinks, repoError := h.Repo.BatchInsertLink(req.Context(), originalLinks)
+	ctx := req.Context()
+	UUID, _ := ctx.Value(middlewares.RequestUUIDKey{}).(string)
+	shortLinks, repoError := h.Repo.BatchInsertLink(req.Context(), originalLinks, UUID)
 	if repoError != nil {
 		http.Error(res, repoError.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// Fill responce json
-	results := make([]responseBatchJSON, len(links))
+	results := make([]responseBatchInsertJSON, len(links))
 	for i, link := range links {
-		results[i] = responseBatchJSON{
+		results[i] = responseBatchInsertJSON{
 			CorrelationID: link.CorrelationID,
 			ShortURL:      fmt.Sprintf("%s%s%s", h.Cfg.HTTP.BaseURL, codePrefix, shortLinks[i]),
 		}

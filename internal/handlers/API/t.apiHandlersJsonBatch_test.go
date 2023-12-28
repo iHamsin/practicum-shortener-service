@@ -3,6 +3,9 @@ package handlers
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/iHamsin/practicum-shortener-service/config"
+	"github.com/iHamsin/practicum-shortener-service/internal/middlewares"
 	"github.com/iHamsin/practicum-shortener-service/internal/repositories"
 )
 
@@ -28,9 +32,9 @@ func TestStatusHandlerGzipJsonBatch(t *testing.T) {
 
 		var repository, _ = repositories.Init(cfg)
 
-		postHandler := APIPostBatchHandler{Repo: repository, Cfg: cfg}
+		postHandler := APIPostBatchInsertHandler{Repo: repository, Cfg: cfg}
 
-		mcPostBody := []requestBatchJSON{{
+		mcPostBody := []requestBatchInsertJSON{{
 			CorrelationID: "1",
 			OriginalURL:   "https://practicum1.yandex.ru",
 		}, {
@@ -56,6 +60,15 @@ func TestStatusHandlerGzipJsonBatch(t *testing.T) {
 
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Content-Encoding", "gzip")
+
+		var key = "1234567890123456"
+		UUID := "123"
+		request = request.WithContext(context.WithValue(request.Context(), middlewares.RequestUUIDKey{}, UUID))
+		h := hmac.New(sha256.New, []byte(key))
+		h.Write([]byte(UUID))
+		cryptedNewUUID := h.Sum(nil)
+		request = request.WithContext(context.WithValue(request.Context(), middlewares.RequestisNewUUIDKey{}, cryptedNewUUID))
+
 		w := httptest.NewRecorder()
 		postHandler.ServeHTTP(w, request)
 		res := w.Result()
@@ -77,9 +90,9 @@ func TestStatusHandlerGzipJsonBatch(t *testing.T) {
 
 		var repository, _ = repositories.Init(cfg)
 
-		postHandler := APIPostBatchHandler{Repo: repository, Cfg: cfg}
+		postHandler := APIPostBatchInsertHandler{Repo: repository, Cfg: cfg}
 
-		mcPostBody := []requestBatchJSON{{
+		mcPostBody := []requestBatchInsertJSON{{
 			CorrelationID: "1",
 			OriginalURL:   "brokenLink",
 		}}
@@ -108,7 +121,7 @@ func TestStatusHandlerGzipJsonBatch(t *testing.T) {
 
 		var repository, _ = repositories.Init(cfg)
 
-		postHandler := APIPostBatchHandler{Repo: repository, Cfg: cfg}
+		postHandler := APIPostBatchInsertHandler{Repo: repository, Cfg: cfg}
 
 		request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader("brokenJson"))
 		request.Header.Set("Content-Type", "application/json")
